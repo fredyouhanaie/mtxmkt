@@ -1,0 +1,25 @@
+
+@author Fred Youhanaie <fyrlang@anydata.co.uk>
+@copyright 2018 Fred Youhanaie
+@version 0.1.0
+
+@doc
+
+<h3>Introduction</h3>
+
+<a href="https://math.nist.gov/MatrixMarket/">Matrix Market</a>
+provides a repository of test matrices for various applications
+areas. It is best described on their web site:
+
+<blockquote><i>A visual repository of test data for use in comparative studies of
+algorithms for numerical linear algebra, featuring nearly 500 sparse
+matrices from a variety of applications, as well as matrix generation
+tools and services.</i></blockquote>
+
+<b>mtxmkt</b> is an Erlang library to handle Matrix Market files. The
+format of the files is described <a
+href="https://math.nist.gov/MatrixMarket/formats.html">here</a>.
+
+The library functions are based on the <a
+href="https://math.nist.gov/MatrixMarket/mmio-c.html">mmio C
+library</a> provided by Matrix market.

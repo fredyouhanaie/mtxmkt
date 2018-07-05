@@ -1,0 +1,15 @@
+{application, mtxmkt,
+ [{description, "Library to handle Matrix Market files"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {maintainers, ["Fred Youhanaie"]},
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+ ]}.
