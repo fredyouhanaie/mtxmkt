@@ -10,16 +10,16 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
--define(File_nofile, "test/nofile.mtx"). %% this file should not exist!
+-define(File_nofile, "test/data/nofile.mtx"). %% this file should not exist!
 -define(File_nulldev, "/dev/null"). %% will work in Unix, not sure about windows!
--define(File_non_mm, "test/testfile-non-mm.mtx").
--define(File_short_banner, "test/testfile-short-banner.mtx").
--define(File_extra_banner, "test/testfile-extra-banner.mtx").
--define(File_invalid_object, "test/testfile-invalid-object.mtx").
--define(File_invalid_format, "test/testfile-invalid-format.mtx").
--define(File_invalid_datatype, "test/testfile-invalid-datatype.mtx").
--define(File_invalid_symmetry, "test/testfile-invalid-symmetry.mtx").
--define(File_valid_banner, "test/testfile-valid-banner.mtx").
+-define(File_non_mm, "test/data/testfile-non-mm.mtx").
+-define(File_short_banner, "test/data/testfile-short-banner.mtx").
+-define(File_extra_banner, "test/data/testfile-extra-banner.mtx").
+-define(File_invalid_object, "test/data/testfile-invalid-object.mtx").
+-define(File_invalid_format, "test/data/testfile-invalid-format.mtx").
+-define(File_invalid_datatype, "test/data/testfile-invalid-datatype.mtx").
+-define(File_invalid_symmetry, "test/data/testfile-invalid-symmetry.mtx").
+-define(File_valid_banner, "test/data/testfile-valid-banner.mtx").
 
 %%--------------------------------------------------------------------
 %% The tests
