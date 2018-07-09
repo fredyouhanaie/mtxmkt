@@ -2,6 +2,7 @@
 
 %% API exports
 -export([mm_openread/1, mm_read_banner/1]).
+-export([mm_read_mtx_crd_size/1, mm_read_mtx_array_size/1]).
 
 %%====================================================================
 %% Macros
@@ -59,6 +60,47 @@ mm_read_banner(IOdev) ->
 	    {error, Reason, "Could not read from file"}
     end.
 
+%%--------------------------------------------------------------------
+%% @doc Get the size of the matrix in coordinate format.
+%%
+%% The number of rows, columns and total elements in the file are
+%% returned as a tuple of three integers.
+%%
+%% @spec
+%% mm_read_mtx_crd_size(io_device()) -> {integer(), integer(), integer()}
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_read_mtx_crd_size(pid()) -> {integer(), integer(), integer()}.
+mm_read_mtx_crd_size(IOdev) ->
+    case read_ints(IOdev) of
+	[Rows, Cols, Elems] ->
+	    {Rows, Cols, Elems};
+	Ints when is_list(Ints) ->
+	    {error, mm_invalid_line, "Expected three integers"};
+	Error ->
+	    Error
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc Get the size of the matrix in array format.
+%%
+%% The number of rows, columns of the matrix are returned as a tuple
+%% of two integers.
+%%
+%% @spec
+%% mm_read_mtx_array_size(io_device()) -> {integer(), integer()}
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_read_mtx_array_size(pid()) -> {integer(), integer()}.
+mm_read_mtx_array_size(IOdev) ->
+    case read_ints(IOdev) of
+	[Rows, Cols] ->
+	    {Rows, Cols};
+	Ints when is_list(Ints) ->
+	    {error, mm_invalid_line, "Expected two integers"};
+	Error ->
+	    Error
+    end.
 
 %%====================================================================
 %% Internal functions
@@ -161,7 +203,7 @@ check_banner_symmetry(Symm) ->
 %% @doc Return the blank separated tokens in a string as a list of atoms.
 %%
 %% @spec
-%% str2atoms(string()) -> list()
+%% str2atoms(string()) -> [atom()]
 %% @end
 %%--------------------------------------------------------------------
 -spec str2atoms(string()) -> list().
@@ -172,3 +214,88 @@ str2atoms (Line) ->
 	      erlang:list_to_atom(string:lowercase(S))
       end,
       StrList).
+
+%%--------------------------------------------------------------------
+%% @doc Return the blank separated tokens in a string as a list of integers.
+%%
+%% @spec
+%% str2ints(string()) -> [integer()]
+%% @end
+%%--------------------------------------------------------------------
+-spec str2ints(string()) -> [integer()].
+str2ints(Line) ->
+    StrList = string:lexemes(Line, ?Blanks),
+    lists:map(fun (S) ->
+		      {I, []} = string:to_integer(S),
+		      I
+	      end,
+	      StrList).
+
+%%--------------------------------------------------------------------
+%% @doc return the next non-blank line
+%%
+%% Empty lines and lines with white space are considered as blank.
+%%
+%% @spec
+%% read_next_line(io_device()) -> string()
+%% @end
+%%--------------------------------------------------------------------
+-spec read_next_line(pid()) -> string().
+read_next_line(IOdev) ->
+    case file:read_line(IOdev) of
+	{ok, Line} ->
+	    case string:is_empty(string:trim(Line)) of
+		true ->
+		    read_next_line(IOdev);
+		_ ->
+		    string:chomp(Line)
+	    end;
+	eof ->
+	    {error, eof, "Error reading from file"};
+	{error, Reason} ->
+	    {error, Reason, "Error reading from file"}
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc return the next non-comment/non-blank line
+%%
+%% Comments are lines with "%" in the first column.
+%%
+%% @spec
+%% skip_comments(io_device()) -> string()
+%% @end
+%%--------------------------------------------------------------------
+-spec skip_comments(pid()) -> string().
+skip_comments(IOdev) ->
+    case read_next_line(IOdev) of
+	{error, Reason, Msg} ->
+	    {error, Reason, Msg};
+	Line ->
+	    case erlang:hd(Line) of
+		$% ->
+		    skip_comments(IOdev);
+		_ ->
+		    Line
+	    end
+    end.
+
+
+%%--------------------------------------------------------------------
+%% @doc Read a line of integers, return them as a list.
+%% @spec
+%% read_ints(io_device()) -> [integer()] | {error, atom(), string()}
+%% @end
+%%--------------------------------------------------------------------
+-spec read_ints(pid()) -> [integer()] | {error, atom(), string()}.
+read_ints(IOdev) ->
+    case skip_comments(IOdev) of
+	{error, Reason, Msg} ->
+	    {error, Reason, Msg};
+	Line ->
+	    case str2ints(Line) of
+		Ints when is_list(Ints) ->
+		    Ints;
+		_ ->
+		    {error, mm_invalid_line, "Expected list of integers"}
+	    end
+    end.

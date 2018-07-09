@@ -20,6 +20,10 @@
 -define(File_invalid_datatype, "test/data/testfile-invalid-datatype.mtx").
 -define(File_invalid_symmetry, "test/data/testfile-invalid-symmetry.mtx").
 -define(File_valid_banner, "test/data/testfile-valid-banner.mtx").
+-define(File_invalid_size_crd, "test/data/testfile-size-invalid-crd.mtx").
+-define(File_invalid_size_array, "test/data/testfile-size-invalid-array.mtx").
+-define(File_valid_size_crd, "test/data/testfile-size-valid-crd.mtx").
+-define(File_valid_size_array, "test/data/testfile-size-valid-array.mtx").
 
 %%--------------------------------------------------------------------
 %% The tests
@@ -96,4 +100,52 @@ banner_valid_banner_test() ->
     IOdev = mtxmkt:mm_openread(?File_valid_banner),
     ?assert(is_pid(IOdev)),
     ?assertMatch({matrix, array, real, general}, mtxmkt:mm_read_banner(IOdev)),
+    file:close(IOdev).
+
+% missing sizes coordinate format
+mising_size_array_test() ->
+    IOdev = mtxmkt:mm_openread(?File_valid_banner),
+    ?assert(is_pid(IOdev)),
+    ?assertMatch({matrix, array, real, general}, mtxmkt:mm_read_banner(IOdev)),
+    ?assertMatch({error, eof, _Msg}, mtxmkt:mm_read_mtx_array_size(IOdev)),
+    file:close(IOdev).
+
+% missing sizes array format
+missing_size_crd_test() ->
+    IOdev = mtxmkt:mm_openread(?File_valid_banner),
+    ?assert(is_pid(IOdev)),
+    ?assertMatch({matrix, array, real, general}, mtxmkt:mm_read_banner(IOdev)),
+    ?assertMatch({error, eof, _Msg}, mtxmkt:mm_read_mtx_crd_size(IOdev)),
+    file:close(IOdev).
+
+% invalid sizes coordinate format
+invalid_size_crd_test() ->
+    IOdev = mtxmkt:mm_openread(?File_invalid_size_crd),
+    ?assert(is_pid(IOdev)),
+    ?assertMatch({matrix, coordinate, real, general}, mtxmkt:mm_read_banner(IOdev)),
+    ?assertMatch({error, mm_invalid_line, _Msg}, mtxmkt:mm_read_mtx_crd_size(IOdev)),
+    file:close(IOdev).
+
+% invalid sizes array format
+invalid_size_array_test() ->
+    IOdev = mtxmkt:mm_openread(?File_invalid_size_array),
+    ?assert(is_pid(IOdev)),
+    ?assertMatch({matrix, array, real, general}, mtxmkt:mm_read_banner(IOdev)),
+    ?assertMatch({error, mm_invalid_line, _Msg}, mtxmkt:mm_read_mtx_array_size(IOdev)),
+    file:close(IOdev).
+
+% valid sizes coordinate format
+valid_size_crd_test() ->
+    IOdev = mtxmkt:mm_openread(?File_valid_size_crd),
+    ?assert(is_pid(IOdev)),
+    ?assertMatch({matrix, coordinate, real, general}, mtxmkt:mm_read_banner(IOdev)),
+    ?assertMatch({5, 4, 12}, mtxmkt:mm_read_mtx_crd_size(IOdev)),
+    file:close(IOdev).
+
+% valid sizes array format
+valid_size_array_test() ->
+    IOdev = mtxmkt:mm_openread(?File_valid_size_array),
+    ?assert(is_pid(IOdev)),
+    ?assertMatch({matrix, array, real, general}, mtxmkt:mm_read_banner(IOdev)),
+    ?assertMatch({5, 4}, mtxmkt:mm_read_mtx_array_size(IOdev)),
     file:close(IOdev).
