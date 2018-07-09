@@ -59,6 +59,19 @@ that combination:
 
 ## Build and Tests
 
-`rebar3` is used for all aspects of code maintainance. For example, to build the library:
+`rebar3` is used for all aspects of code maintainance.
 
-    $ rebar3 compile
+* To build the library
+```
+	$ rebar3 do clean,compile
+```
+
+* To run the eunit tests
+```
+	$ rebar3 eunit
+```
+
+* To generate the documentation
+```
+	$ rebar3 edoc
+```
