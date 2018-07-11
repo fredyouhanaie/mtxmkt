@@ -1,3 +1,15 @@
+%%%-------------------------------------------------------------------
+%%% @author Fred Youhanaie <fyrlang@anydata.co.uk>
+%%% @copyright (C) 2018, Fred Youhanaie
+%%% @doc
+%%% A module for handling Matrix Market files.
+%%%
+%%% The functions read and write the file contents into "matrix"
+%%% types. See the accompanying matrix module for details.
+%%%
+%%% @end
+%%% Created : 5 Jul 2018 by Fred Youhanaie <fyrlang@anydata.co.uk>
+%%%-------------------------------------------------------------------
 -module(mtxmkt).
 
 %% API exports
