@@ -83,8 +83,8 @@ mm_read_mtx_crd_size(IOdev) ->
 	    {Rows, Cols, Elems};
 	Ints when is_list(Ints) ->
 	    {error, mm_invalid_line, "Expected three integers"};
-	Error ->
-	    Error
+	{error, Reason, Msg} ->
+	    {error, Reason, Msg}
     end.
 
 %%--------------------------------------------------------------------
@@ -102,8 +102,8 @@ mm_read_mtx_array_size(IOdev) ->
 	    {Rows, Cols};
 	Ints when is_list(Ints) ->
 	    {error, mm_invalid_line, "Expected two integers"};
-	Error ->
-	    Error
+	{error, Reason, Msg} ->
+	    {error, Reason, Msg}
     end.
 
 %%====================================================================
@@ -212,12 +212,14 @@ str2atoms (Line) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec str2ints(string()) -> [integer()].
+-spec str2ints(string()) -> [integer() | atom()].
 str2ints(Line) ->
     StrList = string:lexemes(Line, ?Blanks),
     lists:map(fun (S) ->
-		      {I, []} = string:to_integer(S),
-		      I
+		      case string:to_integer(S) of
+			  {I, []} -> I;
+			  {error, Reason} -> Reason
+		      end
 	      end,
 	      StrList).
 
@@ -228,7 +230,7 @@ str2ints(Line) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_next_line(pid()) -> string().
+-spec read_next_line(pid()) -> string() | {error, atom(), string()}.
 read_next_line(IOdev) ->
     case file:read_line(IOdev) of
 	{ok, Line} ->
@@ -251,7 +253,7 @@ read_next_line(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec skip_comments(pid()) -> string().
+-spec skip_comments(pid()) -> string() | {error, atom(), string()}.
 skip_comments(IOdev) ->
     case read_next_line(IOdev) of
 	{error, Reason, Msg} ->
@@ -277,10 +279,18 @@ read_ints(IOdev) ->
 	{error, Reason, Msg} ->
 	    {error, Reason, Msg};
 	Line ->
-	    case str2ints(Line) of
-		Ints when is_list(Ints) ->
-		    Ints;
-		_ ->
-		    {error, mm_invalid_line, "Expected list of integers"}
+	    Ints = str2ints(Line),
+	    case all_int(Ints) of
+		true -> Ints;
+		false -> {error, mm_invalid_line, "Expected list of integers"}
 	    end
     end.
+
+%%--------------------------------------------------------------------
+%% @doc test if a list has all integers.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec all_int(list()) -> boolean().
+all_int(Ints) when is_list(Ints) ->
+    lists:all(fun (I) -> is_integer(I) end, Ints).

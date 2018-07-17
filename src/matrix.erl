@@ -27,7 +27,7 @@
 % we have our own size/1 function
 -compile({no_auto_import, [size/1]}).
 
--type matrix() :: {Nrows :: integer(), Ncols :: integer(), Default :: term(), Data :: array:array()}.
+-type matrix() :: #{nrows => integer(), ncols => integer(), default => term(), data => array:array()}.
 
 %%--------------------------------------------------------------------
 %% @doc Create a new matrix.
