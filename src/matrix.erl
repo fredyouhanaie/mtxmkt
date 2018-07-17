@@ -35,8 +35,6 @@
 %% The matrix will have fixed size of <b>Nrows</b> rows and
 %% <b>Ncols</b> columns.
 %%
-%% @spec
-%% new(integer(), integer(), term()) -> matrix()
 %% @end
 %%--------------------------------------------------------------------
 -spec new(integer(), integer(), term()) -> matrix().
@@ -48,8 +46,6 @@ new(Nrows, Ncols, Default) ->
 %%--------------------------------------------------------------------
 %% @doc Return the default term for the missing values in the matrix.
 %%
-%% @spec
-%% default(matrix()) -> term()
 %% @end
 %%--------------------------------------------------------------------
 -spec default(matrix()) -> term().
@@ -61,8 +57,6 @@ default(M) ->
 %%
 %% The size is returned as a tuple {Nrows, Ncols}.
 %%
-%% @spec
-%% size(matrix()) -> {integer(), integer()}
 %% @end
 %%--------------------------------------------------------------------
 -spec size(matrix()) -> {integer(), integer()}.
@@ -71,8 +65,7 @@ size(M) ->
 
 %%--------------------------------------------------------------------
 %% @doc Check the array bounds for a matrix.
-%% @spec
-%% check_bounds(integer(), integer(), matrix()) -> ok | outofbounds
+%%
 %% @end
 %%--------------------------------------------------------------------
 -spec check_bounds(integer(), integer(), matrix()) -> ok | outofbounds.
@@ -112,8 +105,6 @@ check_bounds_col(Col, M) ->
 %% If either or both of row or column indices are outside the matrix
 %% range, the atom outofbounds will be returned.
 %%
-%% @spec
-%% get(integer(), integer(), matrix()) -> term() | outofbounds
 %% @end
 %%--------------------------------------------------------------------
 -spec get(integer(), integer(), matrix()) -> term() | outofbounds.
@@ -133,8 +124,6 @@ get(Row, Col, M) ->
 %% If either or both of row or column indices are out side the matrix
 %% range, the atom outofbounds will be returned.
 %%
-%% @spec
-%% set(integer(), integer(), term(), matrix()) -> matrix() | outofbounds
 %% @end
 %%--------------------------------------------------------------------
 -spec set(integer(), integer(), term(), matrix()) -> matrix() | outofbounds.
@@ -156,8 +145,6 @@ set(Row, Col, Value, M) ->
 %% If the row index is outside the matrix range, the atom outofbounds
 %% will be returned.
 %%
-%% @spec
-%% get_row_list(integer(), matrix()) -> list() | outofbounds
 %% @end
 %%--------------------------------------------------------------------
 -spec get_row_list(integer(), matrix()) -> list() | outofbounds.
@@ -178,8 +165,6 @@ get_row_list(Row, M) ->
 %% If the list is shorter than the number of columns, the missing
 %% elements will take the default value.
 %%
-%% @spec
-%% set_row_list(integer(), list(), matrix()) -> matrix() | outofbounds
 %% @end
 %%--------------------------------------------------------------------
 -spec set_row_list(integer(), list(), matrix()) -> matrix() | outofbounds.
@@ -197,8 +182,6 @@ set_row_list(Row, List, M) ->
 %%--------------------------------------------------------------------
 %% @doc Return the contents of the matrix as a list of lists.
 %%
-%% @spec
-%% to_list(matrix()) -> [list()]
 %% @end
 %%--------------------------------------------------------------------
 -spec to_list(matrix()) -> [list()].

@@ -35,8 +35,6 @@
 %%--------------------------------------------------------------------
 %% @doc Open a matrix file for reading.
 %%
-%% @spec
-%% mm_openread(filename()) -> io_device() | {error, atom(), string()}
 %% @end
 %%--------------------------------------------------------------------
 -spec mm_openread(string()) -> pid() | {error, atom(), string()}.
@@ -57,8 +55,6 @@ mm_openread(Filename) ->
 %% If successful, returns {ok, Banner}, where Banner is a quadruple of
 %% the fields of the banner line.
 %%
-%% @spec
-%% mm_read_banner(io_device()) -> {atom(), atom(), atom(), atom()} | {error, atom(), string()}
 %% @end
 %% --------------------------------------------------------------------
 -spec mm_read_banner(pid()) -> {atom(), atom(), atom(), atom()} | {error, atom(), string()}.
@@ -78,8 +74,6 @@ mm_read_banner(IOdev) ->
 %% The number of rows, columns and total elements in the file are
 %% returned as a tuple of three integers.
 %%
-%% @spec
-%% mm_read_mtx_crd_size(io_device()) -> {integer(), integer(), integer()}
 %% @end
 %%--------------------------------------------------------------------
 -spec mm_read_mtx_crd_size(pid()) -> {integer(), integer(), integer()}.
@@ -99,8 +93,6 @@ mm_read_mtx_crd_size(IOdev) ->
 %% The number of rows, columns of the matrix are returned as a tuple
 %% of two integers.
 %%
-%% @spec
-%% mm_read_mtx_array_size(io_device()) -> {integer(), integer()}
 %% @end
 %%--------------------------------------------------------------------
 -spec mm_read_mtx_array_size(pid()) -> {integer(), integer()}.
@@ -122,8 +114,6 @@ mm_read_mtx_array_size(IOdev) ->
 %%--------------------------------------------------------------------
 %% @doc Check and process the banner line.
 %%
-%% @spec
-%% process_banner(string()) -> {atom(), atom(), atom(), atom()} | {error, atom(), string()}
 %% @end
 %%--------------------------------------------------------------------
 -spec process_banner(string()) -> {atom(), atom(), atom(), atom()} | {error, atom(), string()}.
@@ -145,8 +135,6 @@ process_banner(Banner) ->
 %%--------------------------------------------------------------------
 %% @doc Check the quadruple fields on the banner line.
 %%
-%% @spec
-%% process_banner_rest(list()) -> {atom(), atom(), atom(), atom()} | {error, tuple(), string()}
 %% @end
 %%--------------------------------------------------------------------
 -spec process_banner_rest(list()) -> {atom(), atom(), atom(), atom()} | {error, tuple(), string()}.
@@ -166,8 +154,6 @@ process_banner_rest([Obj, Fmt, Type, Symm]) ->
 %%--------------------------------------------------------------------
 %% @doc Check the second field, format, of the banner.
 %%
-%% @spec
-%% check_banner_mtxtype(atom(), atom(), atom()) -> ok | {error, atom(), string()}
 %% @end
 %%--------------------------------------------------------------------
 -spec check_banner_mtxtype(atom(), atom(), atom()) -> ok | {error, atom(), string()}.
@@ -182,8 +168,6 @@ check_banner_mtxtype(Fmt, Type, Symm) ->
 %%--------------------------------------------------------------------
 %% @doc Check the third field, data type, of the banner.
 %%
-%% @spec
-%% check_banner_datatype(atom(), atom()) -> ok | {error, atom(), string()}
 %% @end
 %%--------------------------------------------------------------------
 -spec check_banner_datatype(atom(), atom()) -> ok | {error, atom(), string()}.
@@ -198,8 +182,6 @@ check_banner_datatype(Type, Symm) ->
 %%--------------------------------------------------------------------
 %% @doc Check the fourth field, symmetry, of the banner line.
 %%
-%% @spec
-%% check_banner_symmetry(atom()) -> ok | {error, atom(), string()}
 %% @end
 %%--------------------------------------------------------------------
 -spec check_banner_symmetry(atom()) -> ok | {error, atom(), string()}.
@@ -214,8 +196,6 @@ check_banner_symmetry(Symm) ->
 %%--------------------------------------------------------------------
 %% @doc Return the blank separated tokens in a string as a list of atoms.
 %%
-%% @spec
-%% str2atoms(string()) -> [atom()]
 %% @end
 %%--------------------------------------------------------------------
 -spec str2atoms(string()) -> list().
@@ -230,8 +210,6 @@ str2atoms (Line) ->
 %%--------------------------------------------------------------------
 %% @doc Return the blank separated tokens in a string as a list of integers.
 %%
-%% @spec
-%% str2ints(string()) -> [integer()]
 %% @end
 %%--------------------------------------------------------------------
 -spec str2ints(string()) -> [integer()].
@@ -248,8 +226,6 @@ str2ints(Line) ->
 %%
 %% Empty lines and lines with white space are considered as blank.
 %%
-%% @spec
-%% read_next_line(io_device()) -> string()
 %% @end
 %%--------------------------------------------------------------------
 -spec read_next_line(pid()) -> string().
@@ -273,8 +249,6 @@ read_next_line(IOdev) ->
 %%
 %% Comments are lines with "%" in the first column.
 %%
-%% @spec
-%% skip_comments(io_device()) -> string()
 %% @end
 %%--------------------------------------------------------------------
 -spec skip_comments(pid()) -> string().
@@ -294,8 +268,7 @@ skip_comments(IOdev) ->
 
 %%--------------------------------------------------------------------
 %% @doc Read a line of integers, return them as a list.
-%% @spec
-%% read_ints(io_device()) -> [integer()] | {error, atom(), string()}
+%%
 %% @end
 %%--------------------------------------------------------------------
 -spec read_ints(pid()) -> [integer()] | {error, atom(), string()}.
