@@ -46,16 +46,28 @@ set_test() ->
     M1 = matrix:set(1, 1, 24, M0),
     ?assertMatch(24, matrix:get(1, 1, M1)).
 
-% get_row
+% get row
 get_row_test() ->
     M = matrix:new(2, 3, 42),
     ?assertMatch([42, 42, 42], matrix:get_row_list(1, M)).
 
-% set/get row
+% set row
 set_row_test() ->
     M0 = matrix:new(2, 3, 42),
     M1 = matrix:set_row_list(1, lists:seq(1,3), M0),
     ?assertMatch([1, 2, 3], matrix:get_row_list(1, M1)).
+
+% get column
+
+get_col_test() ->
+    M = matrix:new(2, 3, 42),
+    ?assertMatch([42, 42], matrix:get_col_list(1, M)).
+
+% set column
+set_col_test() ->
+    M0 = matrix:new(2, 3, 42),
+    M1 = matrix:set_col_list(3, [4, 5], M0),
+    ?assertMatch([4, 5], matrix:get_col_list(3, M1)).
 
 % to_list
 to_list_test() ->

@@ -23,6 +23,7 @@
 -export([new/3, default/1, size/1, to_list/1]).
 -export([get/3, set/4]).
 -export([get_row_list/2, set_row_list/3]).
+-export([get_col_list/2, set_col_list/3]).
 
 % we have our own size/1 function
 -compile({no_auto_import, [size/1]}).
@@ -174,6 +175,55 @@ set_row_list(Row, List, M) ->
 	    Ncols = maps:get(ncols, M),
 	    Row_array = array:from_list(lists:sublist(List, Ncols), maps:get(default, M)),
 	    Data = array:set(Row-1, Row_array, maps:get(data, M)),
+	    maps:update(data, Data, M);
+	Error ->
+	    Error
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc Return the values of a column as a list.
+%%
+%% The column number starts at 1.
+%%
+%% If the column number is outside the matrix range, the atom
+%% outofbounds will be returned.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec get_col_list(integer(), matrix()) -> list() | outofbounds.
+get_col_list(Col, M) ->
+    case check_bounds_col(Col, M) of
+	ok ->
+	    Col_array = array:map(
+			  fun (_Rnum, Row) ->
+				  array:get(Col-1, Row)
+			  end,
+			  maps:get(data, M)
+			 ),
+	    array:to_list(Col_array);
+	Error ->
+	    Error
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc Return a matrix with the given column set to the list.
+%%
+%% The column number starts at 1.
+%%
+%% If the column number is outside the matrix range, the atom
+%% outofbounds will be returned.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec set_col_list(integer(), list(), matrix()) -> matrix() | outofbounds.
+set_col_list(Col, List, M) ->
+    case check_bounds_col(Col, M) of
+	ok ->
+	    Data = array:map(
+		     fun (Rnum, Row) ->
+			     array:set(Col-1, lists:nth(Rnum+1, List), Row)
+		     end,
+		     maps:get(data, M)),
 	    maps:update(data, Data, M);
 	Error ->
 	    Error
