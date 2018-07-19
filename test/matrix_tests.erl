@@ -75,3 +75,9 @@ to_list_test() ->
     M1 = matrix:set_row_list(1, lists:seq(1,3), M0),
     M2 = matrix:set_row_list(2, lists:seq(4,6), M1),
     ?assertMatch([[1, 2, 3], [4, 5, 6]], matrix:to_list(M2)).
+
+% from list
+from_list_test() ->
+    M0 = matrix:new(2, 3, 42),
+    M1 = matrix:from_list([[1, 2, 3], [4, 5, 6]], M0),
+    ?assertMatch([[1, 2, 3], [4, 5, 6]], matrix:to_list(M1)).

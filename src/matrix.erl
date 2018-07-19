@@ -20,10 +20,11 @@
 %%%-------------------------------------------------------------------
 -module(matrix).
 
--export([new/3, default/1, size/1, to_list/1]).
+-export([new/3, default/1, size/1]).
 -export([get/3, set/4]).
 -export([get_row_list/2, set_row_list/3]).
 -export([get_col_list/2, set_col_list/3]).
+-export([to_list/1, from_list/2]).
 
 % we have our own size/1 function
 -compile({no_auto_import, [size/1]}).
@@ -240,3 +241,28 @@ to_list(M) ->
     lists:map(fun (Row) -> array:to_list(Row) end,
 	      array:to_list(maps:get(data, M))
 	     ).
+
+%%--------------------------------------------------------------------
+%% @doc Return a matrix with its content replaced with the list of
+%% lists.
+%%
+%% The List is in the form of a list of rows. If the outer list is
+%% longer than the nmber rows, or the internal lists are longer than
+%% the number of columns, then the extra elements will be ignored.
+%%
+%% for shorter lists, the missing values will take the default values
+%% of the matrix M.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec from_list([list()], matrix()) -> matrix().
+from_list(List, M) ->
+    Nrows = maps:get(nrows, M),
+    Ncols = maps:get(ncols, M),
+    Data = lists:map(
+	     fun (Row) ->
+		     array:from_list( lists:sublist(Row, Ncols) )
+	     end,
+	     lists:sublist(List, Nrows)
+	    ),
+    maps:update(data, array:from_list(Data), M).
