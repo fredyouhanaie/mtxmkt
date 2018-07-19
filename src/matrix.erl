@@ -247,11 +247,16 @@ to_list(M) ->
 %% lists.
 %%
 %% The List is in the form of a list of rows. If the outer list is
-%% longer than the nmber rows, or the internal lists are longer than
-%% the number of columns, then the extra elements will be ignored.
+%% longer than the number of rows, or the internal lists are longer
+%% than the number of columns, then the extra elements will be
+%% ignored.
 %%
 %% for shorter lists, the missing values will take the default values
 %% of the matrix M.
+%%
+%% An empty list, such as `[]' or `[[],[]]', has the same effect as
+%% new/3, where the resulting matrix will have the same size and
+%% default value as `M'.
 %%
 %% @end
 %%--------------------------------------------------------------------
@@ -259,10 +264,16 @@ to_list(M) ->
 from_list(List, M) ->
     Nrows = maps:get(nrows, M),
     Ncols = maps:get(ncols, M),
-    Data = lists:map(
-	     fun (Row) ->
-		     array:from_list( lists:sublist(Row, Ncols) )
-	     end,
-	     lists:sublist(List, Nrows)
-	    ),
-    maps:update(data, array:from_list(Data), M).
+    Default = maps:get(default, M),
+    DefaultRow = array:new( [Ncols, {default, Default}] ),
+    RowList = lists:map(
+		fun (Row) ->
+			L = lists:sublist(Row, Ncols),		% remove extra cols in row
+			A = array:from_list(L, Default),	% create the array of cols
+			array:fix(array:resize(Ncols, A))	% ensure row is a fixed array
+		end,
+		lists:sublist(List, Nrows)	% remove extra rows
+	       ),
+    RowsArray = array:from_list(RowList, DefaultRow),	% create array of rows
+    Data = array:fix(array:resize(Nrows, RowsArray)),	% ensure it's a fixed array
+    maps:update(data, Data, M).

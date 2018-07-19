@@ -81,3 +81,21 @@ from_list_test() ->
     M0 = matrix:new(2, 3, 42),
     M1 = matrix:from_list([[1, 2, 3], [4, 5, 6]], M0),
     ?assertMatch([[1, 2, 3], [4, 5, 6]], matrix:to_list(M1)).
+
+% empty input list
+from_list_empty_test() ->
+    M0 = matrix:new(2, 3, 42),
+    M1 = matrix:from_list([], M0),
+    ?assertMatch([[42, 42, 42], [42, 42, 42]], matrix:to_list(M1)).
+
+% long input list
+from_list_long_test() ->
+    M0 = matrix:new(2, 3, 42),
+    M1 = matrix:from_list([[1, 2, 3], [4, 5, 6, 7, 8], [9, 10]], M0),
+    ?assertMatch([[1, 2, 3], [4, 5, 6]], matrix:to_list(M1)).
+
+% short input list
+from_list_short_test() ->
+    M0 = matrix:new(2, 3, 42),
+    M1 = matrix:from_list([[1, 2]], M0),
+    ?assertMatch([[1, 2, 42], [42, 42, 42]], matrix:to_list(M1)).
