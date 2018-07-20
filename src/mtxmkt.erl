@@ -15,6 +15,8 @@
 %% API exports
 -export([mm_openread/1, mm_read_banner/1]).
 -export([mm_read_mtx_crd_size/1, mm_read_mtx_array_size/1]).
+-export([mm_read_matrix_data/2]).
+-export([mm_readfile/1]).
 
 %%====================================================================
 %% Macros
@@ -30,6 +32,11 @@
 %% Types
 %%====================================================================
 -type mtxerror() ::{error, atom(), string()}.
+-type mtxtype() :: {
+		    array | coordinate,
+		    real | complex | pattern | integer,
+		    general | symmetric | hermitian | 'skew-symmetric'
+		   }.
 
 %%====================================================================
 %% API functions
@@ -298,3 +305,60 @@ read_ints(IOdev) ->
 -spec all_int(list()) -> boolean().
 all_int(Ints) when is_list(Ints) ->
     lists:all(fun (I) -> is_integer(I) end, Ints).
+
+%%--------------------------------------------------------------------
+%% @doc Read an return the matrix data for a given
+%% format/type/symmetry
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_read_matrix_data(pid(), mtxtype()) -> matrix:matrix() | mtxerror().
+
+
+mm_read_matrix_data(IOdev, {coordinate, pattern, general}) ->
+    case mm_read_mtx_crd_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols, Nelems} ->
+	    io:format("new matrix ~p x ~p, with ~p elements.~n", [Nrows, Ncols, Nelems]),
+	    M = matrix:new(Nrows, Ncols, 0),
+	    read_data_crd_pattern(IOdev, Nelems, M)
+    end;
+
+mm_read_matrix_data(_IOdev, _Banner) ->
+    {error, mm_notsupported, "Unsupported matrix type!"}.
+
+%%--------------------------------------------------------------------
+%% @doc Read the `coordinate' `pattern' data from the open file.
+%%
+%% An initialized matrix with the correct dimentsion should be
+%% provided. The data is returned in a `matrix'.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_data_crd_pattern(pid(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
+read_data_crd_pattern(_IOdev, 0, M) ->
+    M;
+read_data_crd_pattern(IOdev, Nelems, M) ->
+    [Row, Col] = read_ints(IOdev),
+    read_data_crd_pattern(IOdev, Nelems-1, matrix:set(Row, Col, 1, M)).
+
+%%--------------------------------------------------------------------
+%% @doc Read an entire matrix market data file.
+%%
+%% The data, if read successfully, will be retured as a `matrix'.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_readfile(string()) -> matrix:matrix() | mtxerror().
+mm_readfile(Filename) ->
+    case  mm_openread(Filename) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	IOdev ->
+	    Banner = {matrix, Fmt, Type, Symm} = mm_read_banner(IOdev),
+	    io:format("Banner=~p.~n", [Banner]),
+	    M = mm_read_matrix_data(IOdev, {Fmt, Type, Symm}),
+	    file:close(IOdev),
+	    M
+    end.
