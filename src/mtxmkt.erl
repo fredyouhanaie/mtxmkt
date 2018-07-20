@@ -26,6 +26,10 @@
 -define(SymmType, [general, symmetric, hermitian, 'skew-symmetric']).
 -define(MatrixMarketBanner, "%%MatrixMarket ").
 
+%%====================================================================
+%% Types
+%%====================================================================
+-type mtxerror() ::{error, atom(), string()}.
 
 %%====================================================================
 %% API functions
@@ -76,7 +80,7 @@ mm_read_banner(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec mm_read_mtx_crd_size(pid()) -> {integer(), integer(), integer()}.
+-spec mm_read_mtx_crd_size(pid()) -> {integer(), integer(), integer()} | mtxerror().
 mm_read_mtx_crd_size(IOdev) ->
     case read_ints(IOdev) of
 	[Rows, Cols, Elems] ->
