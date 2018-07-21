@@ -18,6 +18,7 @@
 -export([mm_read_matrix_data/2]).
 -export([mm_readfile/1]).
 
+
 %%====================================================================
 %% Macros
 %%====================================================================
@@ -28,15 +29,16 @@
 -define(SymmType, [general, symmetric, hermitian, 'skew-symmetric']).
 -define(MatrixMarketBanner, "%%MatrixMarket ").
 
+
 %%====================================================================
 %% Types
 %%====================================================================
 -type mtxerror() ::{error, atom(), string()}.
--type mtxtype() :: {
-		    array | coordinate,
-		    real | complex | pattern | integer,
-		    general | symmetric | hermitian | 'skew-symmetric'
-		   }.
+-type mtxformat() :: array | coordinate.
+-type mtxtype() :: real | complex | pattern | integer.
+-type mtxsymm() :: general | symmetric | hermitian | 'skew-symmetric'.
+-type mtxcode() :: {mtxformat(), mtxtype(), mtxsymm()}.
+
 
 %%====================================================================
 %% API functions
@@ -48,7 +50,7 @@
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec mm_openread(string()) -> pid() | {error, atom(), string()}.
+-spec mm_openread(string()) -> pid() | mtxerror().
 mm_openread(Filename) ->
     case file:open(Filename, [read]) of
 	{ok, IOdev} ->
@@ -68,7 +70,7 @@ mm_openread(Filename) ->
 %%
 %% @end
 %% --------------------------------------------------------------------
--spec mm_read_banner(pid()) -> {atom(), atom(), atom(), atom()} | {error, atom(), string()}.
+-spec mm_read_banner(pid()) -> {atom(), atom(), atom(), atom()} | mtxerror().
 mm_read_banner(IOdev) ->
     case file:read_line(IOdev) of
 	{ok, Banner} ->
@@ -148,13 +150,13 @@ process_banner(Banner) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec process_banner_rest(list()) -> {atom(), atom(), atom(), atom()} | {error, tuple(), string()}.
+-spec process_banner_rest(list()) -> mtxcode() | {error, tuple(), string()}.
 process_banner_rest([Obj, Fmt, Type, Symm]) ->
     case Obj of
 	matrix ->
 	    case check_banner_mtxtype(Fmt, Type, Symm) of
 		ok ->
-		    {Obj, Fmt, Type, Symm};
+		    {Fmt, Type, Symm};
 		Error ->
 		    Error
 	    end;
@@ -167,7 +169,7 @@ process_banner_rest([Obj, Fmt, Type, Symm]) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec check_banner_mtxtype(atom(), atom(), atom()) -> ok | {error, atom(), string()}.
+-spec check_banner_mtxtype(atom(), atom(), atom()) -> ok | mtxerror().
 check_banner_mtxtype(Fmt, Type, Symm) ->
     case lists:member(Fmt, ?MtxType) of
 	true ->
@@ -181,7 +183,7 @@ check_banner_mtxtype(Fmt, Type, Symm) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec check_banner_datatype(atom(), atom()) -> ok | {error, atom(), string()}.
+-spec check_banner_datatype(atom(), atom()) -> ok | mtxerror().
 check_banner_datatype(Type, Symm) ->
     case lists:member(Type, ?DataType) of
 	true ->
@@ -195,7 +197,7 @@ check_banner_datatype(Type, Symm) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec check_banner_symmetry(atom()) -> ok | {error, atom(), string()}.
+-spec check_banner_symmetry(atom()) -> ok | mtxerror().
 check_banner_symmetry(Symm) ->
     case lists:member(Symm, ?SymmType) of
 	true ->
@@ -241,7 +243,7 @@ str2ints(Line) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_next_line(pid()) -> string() | {error, atom(), string()}.
+-spec read_next_line(pid()) -> string() | mtxerror().
 read_next_line(IOdev) ->
     case file:read_line(IOdev) of
 	{ok, Line} ->
@@ -264,7 +266,7 @@ read_next_line(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec skip_comments(pid()) -> string() | {error, atom(), string()}.
+-spec skip_comments(pid()) -> string() | mtxerror().
 skip_comments(IOdev) ->
     case read_next_line(IOdev) of
 	{error, Reason, Msg} ->
@@ -284,7 +286,7 @@ skip_comments(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_ints(pid()) -> [integer()] | {error, atom(), string()}.
+-spec read_ints(pid()) -> [integer()] | mtxerror().
 read_ints(IOdev) ->
     case skip_comments(IOdev) of
 	{error, Reason, Msg} ->
@@ -312,9 +314,7 @@ all_int(Ints) when is_list(Ints) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec mm_read_matrix_data(pid(), mtxtype()) -> matrix:matrix() | mtxerror().
-
-
+-spec mm_read_matrix_data(pid(), mtxcode()) -> matrix:matrix() | mtxerror().
 mm_read_matrix_data(IOdev, {coordinate, pattern, general}) ->
     case mm_read_mtx_crd_size(IOdev) of
 	Error = {error, _Reason, _Msg} ->
@@ -356,9 +356,8 @@ mm_readfile(Filename) ->
 	Error = {error, _Reason, _Msg} ->
 	    Error;
 	IOdev ->
-	    Banner = {matrix, Fmt, Type, Symm} = mm_read_banner(IOdev),
-	    io:format("Banner=~p.~n", [Banner]),
-	    M = mm_read_matrix_data(IOdev, {Fmt, Type, Symm}),
+	    Mtx_code = mm_read_banner(IOdev),
+	    M = mm_read_matrix_data(IOdev, Mtx_code),
 	    file:close(IOdev),
 	    M
     end.
