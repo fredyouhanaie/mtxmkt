@@ -159,7 +159,6 @@ mm_read_matrix_data(IOdev, {coordinate, pattern, general}) ->
 	Error = {error, _Reason, _Msg} ->
 	    Error;
 	{Nrows, Ncols, Nelems} ->
-	    io:format("new matrix ~p x ~p, with ~p elements.~n", [Nrows, Ncols, Nelems]),
 	    M = matrix:new(Nrows, Ncols, 0),
 	    read_data_crd_pattern(IOdev, Nelems, M)
     end;
@@ -369,5 +368,9 @@ all_int(Ints) when is_list(Ints) ->
 read_data_crd_pattern(_IOdev, 0, M) ->
     M;
 read_data_crd_pattern(IOdev, Nelems, M) ->
-    [Row, Col] = read_ints(IOdev),
-    read_data_crd_pattern(IOdev, Nelems-1, matrix:set(Row, Col, 1, M)).
+    case read_ints(IOdev) of
+	[Row, Col] ->
+	    read_data_crd_pattern(IOdev, Nelems-1, matrix:set(Row, Col, 1, M));
+	Error ->
+	    Error
+    end.
