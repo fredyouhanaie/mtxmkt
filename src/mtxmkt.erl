@@ -356,8 +356,17 @@ mm_readfile(Filename) ->
 	Error = {error, _Reason, _Msg} ->
 	    Error;
 	IOdev ->
-	    Mtx_code = mm_read_banner(IOdev),
-	    M = mm_read_matrix_data(IOdev, Mtx_code),
+	    Result = case mm_read_banner(IOdev) of
+			 Error = {error, _Reason, _Msg} ->
+			     Error;
+			 Mtx_code ->
+			     case mm_read_matrix_data(IOdev, Mtx_code) of
+				 Error = {error, _Reason, _Msg} ->
+				     Error;
+				 M ->
+				     M
+			     end
+		     end,
 	    file:close(IOdev),
-	    M
+	    Result
     end.
