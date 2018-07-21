@@ -24,6 +24,9 @@
 -define(File_invalid_size_array, "test/data/testfile-size-invalid-array.mtx").
 -define(File_valid_size_crd, "test/data/testfile-size-valid-crd.mtx").
 -define(File_valid_size_array, "test/data/testfile-size-valid-array.mtx").
+-define(File_valid_crd_patt_gen, "test/data/testfile-valid-crd-patt-gen.mtx").
+-define(File_short_crd_patt_gen, "test/data/testfile-short-crd-patt-gen.mtx").
+-define(File_invalid_crd_patt_gen, "test/data/testfile-invalid-crd-patt-gen.mtx").
 
 %%--------------------------------------------------------------------
 %% The tests
@@ -149,3 +152,16 @@ valid_size_array_test() ->
     ?assertMatch({array, real, general}, mtxmkt:mm_read_banner(IOdev)),
     ?assertMatch({5, 4}, mtxmkt:mm_read_mtx_array_size(IOdev)),
     file:close(IOdev).
+
+% valid coordinate pattern general
+valid_crd_patt_gen_test() ->
+    M = mtxmkt:mm_readfile(?File_valid_crd_patt_gen),
+    ?assertMatch([[1,0,1],[0,1,0],[1,0,1]], matrix:to_list(M)).
+
+% short coordinate pattern general
+short_crd_patt_gen_test() ->
+    ?assertMatch({error, eof, _Msg}, mtxmkt:mm_readfile(?File_short_crd_patt_gen)).
+
+% short coordinate pattern general
+invalid_crd_patt_gen_test() ->
+    ?assertMatch({error, mm_invalid_line, _Msg}, mtxmkt:mm_readfile(?File_invalid_crd_patt_gen)).
