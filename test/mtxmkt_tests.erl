@@ -27,6 +27,7 @@
 -define(File_valid_crd_patt_gen, "test/data/testfile-valid-crd-patt-gen.mtx").
 -define(File_short_crd_patt_gen, "test/data/testfile-short-crd-patt-gen.mtx").
 -define(File_invalid_crd_patt_gen, "test/data/testfile-invalid-crd-patt-gen.mtx").
+-define(File_valid_crd_int_gen, "test/data/testfile-valid-crd-int-gen.mtx").
 
 %%--------------------------------------------------------------------
 %% The tests
@@ -165,3 +166,8 @@ short_crd_patt_gen_test() ->
 % short coordinate pattern general
 invalid_crd_patt_gen_test() ->
     ?assertMatch({error, mm_invalid_line, _Msg}, mtxmkt:mm_readfile(?File_invalid_crd_patt_gen)).
+
+% valid coordinate integer general
+valid_crd_int_gen_test() ->
+    M = mtxmkt:mm_readfile(?File_valid_crd_int_gen),
+    ?assertMatch([[1,0,2],[0,3,0],[4,0,5]], matrix:to_list(M)).

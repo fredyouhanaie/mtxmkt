@@ -163,6 +163,15 @@ mm_read_matrix_data(IOdev, {coordinate, pattern, general}) ->
 	    read_data_crd_pattern(IOdev, Nelems, M)
     end;
 
+mm_read_matrix_data(IOdev, {coordinate, integer, general}) ->
+    case mm_read_mtx_crd_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols, Nelems} ->
+	    M = matrix:new(Nrows, Ncols, 0),
+	    read_data_crd_integer(IOdev, Nelems, M)
+    end;
+
 mm_read_matrix_data(_IOdev, _Banner) ->
     {error, mm_notsupported, "Unsupported matrix type!"}.
 
@@ -371,6 +380,29 @@ read_data_crd_pattern(IOdev, Nelems, M) ->
     case read_ints(IOdev) of
 	[Row, Col] ->
 	    read_data_crd_pattern(IOdev, Nelems-1, matrix:set(Row, Col, 1, M));
+	L when is_list(L) ->
+	    {error, mm_invalid_entry, "Expected two integers"};
+	Error ->
+	    Error
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc Read the `coordinate' `integer' data from the open file.
+%%
+%% An initialized matrix with the correct dimentsion should be
+%% provided. The data is returned in a `matrix'.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_data_crd_integer(pid(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
+read_data_crd_integer(_IOdev, 0, M) ->
+    M;
+read_data_crd_integer(IOdev, Nelems, M) ->
+    case read_ints(IOdev) of
+	[Row, Col, Value] ->
+	    read_data_crd_integer(IOdev, Nelems-1, matrix:set(Row, Col, Value, M));
+	L when is_list(L) ->
+	    {error, mm_invalid_entry, "Expected three integers"};
 	Error ->
 	    Error
     end.
