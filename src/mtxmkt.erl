@@ -38,6 +38,7 @@
 -type mtxtype() :: real | complex | pattern | integer.
 -type mtxsymm() :: general | symmetric | hermitian | 'skew-symmetric'.
 -type mtxcode() :: {mtxformat(), mtxtype(), mtxsymm()}.
+-type complex() :: {float(), float()}.
 
 
 %%====================================================================
@@ -165,6 +166,15 @@ mm_read_matrix_data(IOdev, {coordinate, real, general}) ->
 	{Nrows, Ncols, Nelems} ->
 	    M = matrix:new(Nrows, Ncols, 0.0),
 	    read_data_crd_real(IOdev, Nelems, M)
+    end;
+
+mm_read_matrix_data(IOdev, {coordinate, complex, general}) ->
+    case mm_read_mtx_crd_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols, Nelems} ->
+	    M = matrix:new(Nrows, Ncols, {0.0, 0.0}),
+	    read_data_crd_complex(IOdev, Nelems, M)
     end;
 
 mm_read_matrix_data(_IOdev, _Banner) ->
@@ -397,6 +407,28 @@ read_crd_float(IOdev) ->
     end.
 
 %%--------------------------------------------------------------------
+%% @doc Read a line of coordinates and complex value from the open
+%% file.
+%%
+%% The complex value is stored as a tuple of two floats.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_crd_complex(pid()) -> {integer(), integer(), complex()} | mtxerror().
+read_crd_complex(IOdev) ->
+    case read_next_line(IOdev) of
+	Line when is_list(Line) ->
+	    case io_lib:fread("~d ~d ~f ~f", Line) of
+		{ok, [Row, Col, Real, Imag], []} ->
+		    {Row, Col, {Real, Imag}};
+		_ ->
+		    {error, mm_invalid_entry, "Expected int/int/float/float"}
+	    end;
+	Error ->
+	    Error
+    end.
+
+%%--------------------------------------------------------------------
 %% @doc Read the `coordinate' `pattern' data from the open file.
 %%
 %% An initialized matrix with the correct dimentsion should be
@@ -454,4 +486,28 @@ read_data_crd_real(IOdev, Nelems, M) ->
 	    Error;
 	{Row, Col, Value} ->
 	    read_data_crd_real(IOdev, Nelems-1, matrix:set(Row, Col, Value, M))
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc Read the `coordinate' `complex' data from the open file.
+%%
+%% `Nelems' lines of `integer' `integer' `float' `float' will be read
+%% from the open file. The data is returned in a `matrix'.
+%%
+%% Internally the complex value is stored as a tuple of two floats.
+%%
+%% An initialized matrix with the correct dimension should be
+%% provided.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_data_crd_complex(pid(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
+read_data_crd_complex(_IOdev, 0, M) ->
+    M;
+read_data_crd_complex(IOdev, Nelems, M) ->
+    case read_crd_complex(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Row, Col, Value} ->
+	    read_data_crd_complex(IOdev, Nelems-1, matrix:set(Row, Col, Value, M))
     end.
