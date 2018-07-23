@@ -91,12 +91,7 @@ mm_read_banner(IOdev) ->
 %%--------------------------------------------------------------------
 -spec mm_read_mtx_crd_size(pid()) -> {integer(), integer(), integer()} | mtxerror().
 mm_read_mtx_crd_size(IOdev) ->
-    case read_ints(IOdev, 3) of
-	[Rows, Cols, Elems] ->
-	    {Rows, Cols, Elems};
-	{error, Reason, Msg} ->
-	    {error, Reason, Msg}
-    end.
+    read_mtx_size(IOdev, "~d ~d ~d").
 
 %%--------------------------------------------------------------------
 %% @doc Get the size of the matrix in array format.
@@ -108,12 +103,7 @@ mm_read_mtx_crd_size(IOdev) ->
 %%--------------------------------------------------------------------
 -spec mm_read_mtx_array_size(pid()) -> {integer(), integer()}.
 mm_read_mtx_array_size(IOdev) ->
-    case read_ints(IOdev, 2) of
-	[Rows, Cols] ->
-	    {Rows, Cols};
-	{error, Reason, Msg} ->
-	    {error, Reason, Msg}
-    end.
+    read_mtx_size(IOdev, "~d ~d").
 
 %%--------------------------------------------------------------------
 %% @doc Read an entire matrix market data file.
@@ -282,22 +272,6 @@ str2atoms (Line) ->
       StrList).
 
 %%--------------------------------------------------------------------
-%% @doc Return the blank separated tokens in a string as a list of integers.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec str2ints(string()) -> [integer() | atom()].
-str2ints(Line) ->
-    StrList = string:lexemes(Line, ?Blanks),
-    lists:map(fun (S) ->
-		      case string:to_integer(S) of
-			  {I, []} -> I;
-			  {error, Reason} -> Reason
-		      end
-	      end,
-	      StrList).
-
-%%--------------------------------------------------------------------
 %% @doc return the next non-blank line
 %%
 %% Empty lines and lines with white space are considered as blank.
@@ -341,53 +315,67 @@ skip_comments(IOdev) ->
 	    end
     end.
 
-
 %%--------------------------------------------------------------------
-%% @doc Read a line of integers, return them as a list.
+%% @doc Read matrix sizes
+%%
+%% `Line_fmt' should be either "~d ~d" or "~d ~d ~d".
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_ints(pid()) -> [integer()] | mtxerror().
-read_ints(IOdev) ->
+-spec read_mtx_size(pid(), string()) -> {integer(), integer()} | {integer(), integer(), integer()} | mtxerror().
+read_mtx_size(IOdev, Line_fmt) ->
     case skip_comments(IOdev) of
-	{error, Reason, Msg} ->
-	    {error, Reason, Msg};
-	Line ->
-	    Ints = str2ints(Line),
-	    case all_int(Ints) of
-		true -> Ints;
-		false -> {error, mm_invalid_line, "Expected list of integers"}
-	    end
-    end.
+	Line when is_list(Line) ->
+	    case io_lib:fread(Line_fmt, Line) of
+		{ok, [Row, Col], []} ->
+		    {Row, Col};
+		{ok, [Row, Col, Nelems], []} ->
+		    {Row, Col, Nelems};
+		_ ->
+		    {error, mm_invalid_entry, "Expected int/int or int/int/int"}
+	    end;
+	Error ->
+	    Error
+	end.
 
 %%--------------------------------------------------------------------
-%% @doc Read a fixed number of integers.
-%%
-%% attempts to read exactly `Nints' integers from file. Returns list
-%% of integers, if successful, otherwise error tuple.
+%% @doc Read a line of coordinates (for pattern type) from the open file.
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_ints(file:io_device(), integer()) -> list() | mtxerror().
-read_ints(IOdev, Nints) when is_integer(Nints) ->
-    case read_ints(IOdev) of
-	L when is_list(L) andalso length(L) == Nints ->
-	    L;
-	L when is_list(L) ->
-	    Msg = lists:flatten(io_lib:format("Expected ~p integers.", [Nints])),
-	    {error, mm_invalid_entry, Msg};
-	Error = {error, _Reason, _Msg} ->
+-spec read_crd_patt(pid()) -> {integer(), integer()} | mtxerror().
+read_crd_patt(IOdev) ->
+    case read_next_line(IOdev) of
+	Line when is_list(Line) ->
+	    case io_lib:fread("~d ~d", Line) of
+		{ok, [Row, Col], []} ->
+		    {Row, Col};
+		_ ->
+		    {error, mm_invalid_entry, "Expected int/int"}
+	    end;
+	Error ->
 	    Error
     end.
 
 %%--------------------------------------------------------------------
-%% @doc test if a list has all integers.
+%% @doc Read a line of coordinates and integer value from the open
+%% file.
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec all_int(list()) -> boolean().
-all_int(Ints) when is_list(Ints) ->
-    lists:all(fun (I) -> is_integer(I) end, Ints).
+-spec read_crd_int(pid()) -> {integer(), integer(), integer()} | mtxerror().
+read_crd_int(IOdev) ->
+    case read_next_line(IOdev) of
+	Line when is_list(Line) ->
+	    case io_lib:fread("~d ~d ~d", Line) of
+		{ok, [Row, Col, Value], []} ->
+		    {Row, Col, Value};
+		_ ->
+		    {error, mm_invalid_entry, "Expected int/int/int"}
+	    end;
+	Error ->
+	    Error
+    end.
 
 %%--------------------------------------------------------------------
 %% @doc Read a line of coordinates and float value from the open file.
@@ -420,8 +408,8 @@ read_crd_float(IOdev) ->
 read_data_crd_pattern(_IOdev, 0, M) ->
     M;
 read_data_crd_pattern(IOdev, Nelems, M) ->
-    case read_ints(IOdev, 2) of
-	[Row, Col] ->
+    case read_crd_patt(IOdev) of
+	{Row, Col} ->
 	    read_data_crd_pattern(IOdev, Nelems-1, matrix:set(Row, Col, 1, M));
 	Error ->
 	    Error
@@ -439,11 +427,11 @@ read_data_crd_pattern(IOdev, Nelems, M) ->
 read_data_crd_integer(_IOdev, 0, M) ->
     M;
 read_data_crd_integer(IOdev, Nelems, M) ->
-    case read_ints(IOdev, 3) of
-	[Row, Col, Value] ->
-	    read_data_crd_integer(IOdev, Nelems-1, matrix:set(Row, Col, Value, M));
-	Error ->
-	    Error
+    case read_crd_int(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Row, Col, Value} ->
+	    read_data_crd_integer(IOdev, Nelems-1, matrix:set(Row, Col, Value, M))
     end.
 
 %%--------------------------------------------------------------------

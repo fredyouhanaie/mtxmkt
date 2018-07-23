@@ -166,7 +166,7 @@ short_crd_patt_gen_test() ->
 
 % short coordinate pattern general
 invalid_crd_patt_gen_test() ->
-    ?assertMatch({error, mm_invalid_line, _Msg}, mtxmkt:mm_readfile(?File_invalid_crd_patt_gen)).
+    ?assertMatch({error, mm_invalid_entry, _Msg}, mtxmkt:mm_readfile(?File_invalid_crd_patt_gen)).
 
 % valid coordinate integer general
 valid_crd_int_gen_test() ->
