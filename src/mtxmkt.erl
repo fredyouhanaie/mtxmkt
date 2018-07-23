@@ -168,6 +168,15 @@ mm_read_matrix_data(IOdev, {coordinate, integer, general}) ->
 	    read_data_crd_integer(IOdev, Nelems, M)
     end;
 
+mm_read_matrix_data(IOdev, {coordinate, real, general}) ->
+    case mm_read_mtx_crd_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols, Nelems} ->
+	    M = matrix:new(Nrows, Ncols, 0.0),
+	    read_data_crd_real(IOdev, Nelems, M)
+    end;
+
 mm_read_matrix_data(_IOdev, _Banner) ->
     {error, mm_notsupported, "Unsupported matrix type!"}.
 
@@ -380,6 +389,24 @@ read_ints(IOdev, Nints) when is_integer(Nints) ->
 all_int(Ints) when is_list(Ints) ->
     lists:all(fun (I) -> is_integer(I) end, Ints).
 
+%%--------------------------------------------------------------------
+%% @doc Read a line of coordinates and float value from the open file.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_crd_float(pid()) -> {integer(), integer(), float()} | mtxerror().
+read_crd_float(IOdev) ->
+    case read_next_line(IOdev) of
+	Line when is_list(Line) ->
+	    case io_lib:fread("~d ~d ~f", Line) of
+		{ok, [Row, Col, Value], []} ->
+		    {Row, Col, Value};
+		_ ->
+		    {error, mm_invalid_entry, "Expected int/int/float"}
+	    end;
+	Error ->
+	    Error
+    end.
 
 %%--------------------------------------------------------------------
 %% @doc Read the `coordinate' `pattern' data from the open file.
@@ -417,4 +444,26 @@ read_data_crd_integer(IOdev, Nelems, M) ->
 	    read_data_crd_integer(IOdev, Nelems-1, matrix:set(Row, Col, Value, M));
 	Error ->
 	    Error
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc Read the `coordinate' `real' data from the open file.
+%%
+%% `Nelems' lines of `integer' `integer' `float' will be read from the
+%% open file. The data is returned in a `matrix'.
+%%
+%% An initialized matrix with the correct dimension should be
+%% provided.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_data_crd_real(pid(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
+read_data_crd_real(_IOdev, 0, M) ->
+    M;
+read_data_crd_real(IOdev, Nelems, M) ->
+    case read_crd_float(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Row, Col, Value} ->
+	    read_data_crd_real(IOdev, Nelems-1, matrix:set(Row, Col, Value, M))
     end.
