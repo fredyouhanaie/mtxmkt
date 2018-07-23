@@ -39,6 +39,7 @@
 -type mtxsymm() :: general | symmetric | hermitian | 'skew-symmetric'.
 -type mtxcode() :: {mtxformat(), mtxtype(), mtxsymm()}.
 -type complex() :: {float(), float()}.
+-type iodev() :: file:io_device().
 
 
 %%====================================================================
@@ -51,7 +52,7 @@
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec mm_openread(string()) -> pid() | mtxerror().
+-spec mm_openread(string()) -> iodev()| mtxerror().
 mm_openread(Filename) ->
     case file:open(Filename, [read]) of
 	{ok, IOdev} ->
@@ -71,7 +72,7 @@ mm_openread(Filename) ->
 %%
 %% @end
 %% --------------------------------------------------------------------
--spec mm_read_banner(pid()) -> {atom(), atom(), atom(), atom()} | mtxerror().
+-spec mm_read_banner(iodev()) -> {atom(), atom(), atom(), atom()} | mtxerror().
 mm_read_banner(IOdev) ->
     case file:read_line(IOdev) of
 	{ok, Banner} ->
@@ -90,7 +91,7 @@ mm_read_banner(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec mm_read_mtx_crd_size(pid()) -> {integer(), integer(), integer()} | mtxerror().
+-spec mm_read_mtx_crd_size(iodev()) -> {integer(), integer(), integer()} | mtxerror().
 mm_read_mtx_crd_size(IOdev) ->
     read_mtx_size(IOdev, "~d ~d ~d").
 
@@ -102,7 +103,7 @@ mm_read_mtx_crd_size(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec mm_read_mtx_array_size(pid()) -> {integer(), integer()}.
+-spec mm_read_mtx_array_size(iodev()) -> {integer(), integer()}.
 mm_read_mtx_array_size(IOdev) ->
     read_mtx_size(IOdev, "~d ~d").
 
@@ -140,7 +141,7 @@ mm_readfile(Filename) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec mm_read_matrix_data(pid(), mtxcode()) -> matrix:matrix() | mtxerror().
+-spec mm_read_matrix_data(iodev(), mtxcode()) -> matrix:matrix() | mtxerror().
 mm_read_matrix_data(IOdev, {coordinate, pattern, general}) ->
     case mm_read_mtx_crd_size(IOdev) of
 	Error = {error, _Reason, _Msg} ->
@@ -288,7 +289,7 @@ str2atoms (Line) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_next_line(pid()) -> string() | mtxerror().
+-spec read_next_line(iodev()) -> string() | mtxerror().
 read_next_line(IOdev) ->
     case file:read_line(IOdev) of
 	{ok, Line} ->
@@ -311,7 +312,7 @@ read_next_line(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec skip_comments(pid()) -> string() | mtxerror().
+-spec skip_comments(iodev()) -> string() | mtxerror().
 skip_comments(IOdev) ->
     case read_next_line(IOdev) of
 	{error, Reason, Msg} ->
@@ -332,7 +333,7 @@ skip_comments(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_mtx_size(pid(), string()) -> {integer(), integer()} | {integer(), integer(), integer()} | mtxerror().
+-spec read_mtx_size(iodev(), string()) -> {integer(), integer()} | {integer(), integer(), integer()} | mtxerror().
 read_mtx_size(IOdev, Line_fmt) ->
     case skip_comments(IOdev) of
 	Line when is_list(Line) ->
@@ -353,7 +354,7 @@ read_mtx_size(IOdev, Line_fmt) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_crd_patt(pid()) -> {integer(), integer()} | mtxerror().
+-spec read_crd_patt(iodev()) -> {integer(), integer()} | mtxerror().
 read_crd_patt(IOdev) ->
     case read_next_line(IOdev) of
 	Line when is_list(Line) ->
@@ -373,7 +374,7 @@ read_crd_patt(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_crd_int(pid()) -> {integer(), integer(), integer()} | mtxerror().
+-spec read_crd_int(iodev()) -> {integer(), integer(), integer()} | mtxerror().
 read_crd_int(IOdev) ->
     case read_next_line(IOdev) of
 	Line when is_list(Line) ->
@@ -392,7 +393,7 @@ read_crd_int(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_crd_float(pid()) -> {integer(), integer(), float()} | mtxerror().
+-spec read_crd_float(iodev()) -> {integer(), integer(), float()} | mtxerror().
 read_crd_float(IOdev) ->
     case read_next_line(IOdev) of
 	Line when is_list(Line) ->
@@ -414,7 +415,7 @@ read_crd_float(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_crd_complex(pid()) -> {integer(), integer(), complex()} | mtxerror().
+-spec read_crd_complex(iodev()) -> {integer(), integer(), complex()} | mtxerror().
 read_crd_complex(IOdev) ->
     case read_next_line(IOdev) of
 	Line when is_list(Line) ->
@@ -436,7 +437,7 @@ read_crd_complex(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_data_crd_pattern(pid(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
+-spec read_data_crd_pattern(iodev(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
 read_data_crd_pattern(_IOdev, 0, M) ->
     M;
 read_data_crd_pattern(IOdev, Nelems, M) ->
@@ -455,7 +456,7 @@ read_data_crd_pattern(IOdev, Nelems, M) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_data_crd_integer(pid(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
+-spec read_data_crd_integer(iodev(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
 read_data_crd_integer(_IOdev, 0, M) ->
     M;
 read_data_crd_integer(IOdev, Nelems, M) ->
@@ -477,7 +478,7 @@ read_data_crd_integer(IOdev, Nelems, M) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_data_crd_real(pid(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
+-spec read_data_crd_real(iodev(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
 read_data_crd_real(_IOdev, 0, M) ->
     M;
 read_data_crd_real(IOdev, Nelems, M) ->
@@ -501,7 +502,7 @@ read_data_crd_real(IOdev, Nelems, M) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_data_crd_complex(pid(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
+-spec read_data_crd_complex(iodev(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
 read_data_crd_complex(_IOdev, 0, M) ->
     M;
 read_data_crd_complex(IOdev, Nelems, M) ->
