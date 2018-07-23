@@ -127,7 +127,7 @@ invalid_size_crd_test() ->
     IOdev = mtxmkt:mm_openread(?File_invalid_size_crd),
     ?assert(is_pid(IOdev)),
     ?assertMatch({coordinate, real, general}, mtxmkt:mm_read_banner(IOdev)),
-    ?assertMatch({error, mm_invalid_line, _Msg}, mtxmkt:mm_read_mtx_crd_size(IOdev)),
+    ?assertMatch({error, mm_invalid_entry, _Msg}, mtxmkt:mm_read_mtx_crd_size(IOdev)),
     file:close(IOdev).
 
 % invalid sizes array format
@@ -135,7 +135,7 @@ invalid_size_array_test() ->
     IOdev = mtxmkt:mm_openread(?File_invalid_size_array),
     ?assert(is_pid(IOdev)),
     ?assertMatch({array, real, general}, mtxmkt:mm_read_banner(IOdev)),
-    ?assertMatch({error, mm_invalid_line, _Msg}, mtxmkt:mm_read_mtx_array_size(IOdev)),
+    ?assertMatch({error, mm_invalid_entry, _Msg}, mtxmkt:mm_read_mtx_array_size(IOdev)),
     file:close(IOdev).
 
 % valid sizes coordinate format

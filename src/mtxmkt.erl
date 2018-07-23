@@ -91,11 +91,9 @@ mm_read_banner(IOdev) ->
 %%--------------------------------------------------------------------
 -spec mm_read_mtx_crd_size(pid()) -> {integer(), integer(), integer()} | mtxerror().
 mm_read_mtx_crd_size(IOdev) ->
-    case read_ints(IOdev) of
+    case read_ints(IOdev, 3) of
 	[Rows, Cols, Elems] ->
 	    {Rows, Cols, Elems};
-	Ints when is_list(Ints) ->
-	    {error, mm_invalid_line, "Expected three integers"};
 	{error, Reason, Msg} ->
 	    {error, Reason, Msg}
     end.
@@ -110,11 +108,9 @@ mm_read_mtx_crd_size(IOdev) ->
 %%--------------------------------------------------------------------
 -spec mm_read_mtx_array_size(pid()) -> {integer(), integer()}.
 mm_read_mtx_array_size(IOdev) ->
-    case read_ints(IOdev) of
+    case read_ints(IOdev, 2) of
 	[Rows, Cols] ->
 	    {Rows, Cols};
-	Ints when is_list(Ints) ->
-	    {error, mm_invalid_line, "Expected two integers"};
 	{error, Reason, Msg} ->
 	    {error, Reason, Msg}
     end.
@@ -356,6 +352,26 @@ read_ints(IOdev) ->
     end.
 
 %%--------------------------------------------------------------------
+%% @doc Read a fixed number of integers.
+%%
+%% attempts to read exactly `Nints' integers from file. Returns list
+%% of integers, if successful, otherwise error tuple.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_ints(file:io_device(), integer()) -> list() | mtxerror().
+read_ints(IOdev, Nints) when is_integer(Nints) ->
+    case read_ints(IOdev) of
+	L when is_list(L) andalso length(L) == Nints ->
+	    L;
+	L when is_list(L) ->
+	    Msg = lists:flatten(io_lib:format("Expected ~p integers.", [Nints])),
+	    {error, mm_invalid_entry, Msg};
+	Error = {error, _Reason, _Msg} ->
+	    Error
+    end.
+
+%%--------------------------------------------------------------------
 %% @doc test if a list has all integers.
 %%
 %% @end
@@ -377,11 +393,9 @@ all_int(Ints) when is_list(Ints) ->
 read_data_crd_pattern(_IOdev, 0, M) ->
     M;
 read_data_crd_pattern(IOdev, Nelems, M) ->
-    case read_ints(IOdev) of
+    case read_ints(IOdev, 2) of
 	[Row, Col] ->
 	    read_data_crd_pattern(IOdev, Nelems-1, matrix:set(Row, Col, 1, M));
-	L when is_list(L) ->
-	    {error, mm_invalid_entry, "Expected two integers"};
 	Error ->
 	    Error
     end.
@@ -398,11 +412,9 @@ read_data_crd_pattern(IOdev, Nelems, M) ->
 read_data_crd_integer(_IOdev, 0, M) ->
     M;
 read_data_crd_integer(IOdev, Nelems, M) ->
-    case read_ints(IOdev) of
+    case read_ints(IOdev, 3) of
 	[Row, Col, Value] ->
 	    read_data_crd_integer(IOdev, Nelems-1, matrix:set(Row, Col, Value, M));
-	L when is_list(L) ->
-	    {error, mm_invalid_entry, "Expected three integers"};
 	Error ->
 	    Error
     end.
