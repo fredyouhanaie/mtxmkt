@@ -178,6 +178,15 @@ mm_read_matrix_data(IOdev, {coordinate, complex, general}) ->
 	    read_data_crd_complex(IOdev, Nelems, M)
     end;
 
+mm_read_matrix_data(IOdev, {array, integer, general}) ->
+    case mm_read_mtx_array_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols} ->
+	    M = matrix:new(Nrows, Ncols, 0),
+	    read_data_array_integer(IOdev, Nrows, Ncols, M)
+    end;
+
 mm_read_matrix_data(_IOdev, _Banner) ->
     {error, mm_notsupported, "Unsupported matrix type!"}.
 
@@ -511,4 +520,60 @@ read_data_crd_complex(IOdev, Nelems, M) ->
 	    Error;
 	{Row, Col, Value} ->
 	    read_data_crd_complex(IOdev, Nelems-1, matrix:set(Row, Col, Value, M))
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc Read and parse single line of data.
+%%
+%% The format `Fmt' should follow the `io' format, e.g. "~d" or "~d ~d ~f".
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_data_entry(iodev(), string()) -> list() | mtxerror().
+read_data_entry(IOdev, Fmt) ->
+    case read_next_line(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	Line when is_list(Line) ->
+	    case io_lib:fread(Fmt, Line) of
+		{ok, Data, []} ->
+		    Data;
+		_ ->
+		    {error, mm_invalid_entry, "Invalid data entry."}
+	    end
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc Read the `array' `integer' data from the open file.
+%%
+%% The data is returned as a matrix.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_data_array_integer(iodev(), integer(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
+read_data_array_integer(IOdev, Nrows, Ncols, M) ->
+    lists:foreach(fun
+		      (Col_num) ->
+			  Col_list = read_data_col_integer(IOdev, Nrows, []),
+			  matrix:set_col_list(Col_num, Col_list, M)
+		  end,
+		  lists:seq(1,Ncols)),
+    M.
+
+%%--------------------------------------------------------------------
+%% @doc Read a column of data for the given number of rows.
+%%
+%% The column data is returned as a list of integers.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_data_col_integer(iodev(), integer(), [integer()]) -> [integer()] | mtxerror().
+read_data_col_integer(_IOdev, 0, Col_list) ->
+    lists:reverse(Col_list);
+read_data_col_integer(IOdev, Nelems, Col_list) ->
+    case read_data_entry(IOdev, "~d") of
+	[Value] when is_integer(Value) ->
+	    read_data_col_integer(IOdev, Nelems-1, [Value|Col_list]);
+	Error ->
+	    Error
     end.
