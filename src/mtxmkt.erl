@@ -186,6 +186,15 @@ mm_read_matrix_data(IOdev, {array, integer, general}) ->
 	    read_data_array_integer(IOdev, Nrows, Ncols, 1, M)
     end;
 
+mm_read_matrix_data(IOdev, {array, real, general}) ->
+    case mm_read_mtx_array_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols} ->
+	    M = matrix:new(Nrows, Ncols, 0),
+	    read_data_array_real(IOdev, Nrows, Ncols, 1, M)
+    end;
+
 mm_read_matrix_data(_IOdev, _Banner) ->
     {error, mm_notsupported, "Unsupported matrix type!"}.
 
@@ -476,6 +485,21 @@ read_data_array_integer(IOdev, Nrows, Ncols, Col_num, M) ->
     Col_list = read_data_col(IOdev, "~d", Nrows, []),
     M2 = matrix:set_col_list(Col_num, Col_list, M),
     read_data_array_integer(IOdev, Nrows, Ncols-1, Col_num+1, M2).
+
+%%--------------------------------------------------------------------
+%% @doc Read the `array' `real' data from the open file.
+%%
+%% The data is returned as a matrix.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_data_array_real(iodev(), integer(), integer(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
+read_data_array_real(_IOdev, _Nrows, 0, _Col_num, M) ->
+    M;
+read_data_array_real(IOdev, Nrows, Ncols, Col_num, M) ->
+    Col_list = read_data_col(IOdev, "~f", Nrows, []),
+    M2 = matrix:set_col_list(Col_num, Col_list, M),
+    read_data_array_real(IOdev, Nrows, Ncols-1, Col_num+1, M2).
 
 %%--------------------------------------------------------------------
 %% @doc Read a column of data for the given number of rows.
