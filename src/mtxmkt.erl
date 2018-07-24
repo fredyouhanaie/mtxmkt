@@ -184,7 +184,7 @@ mm_read_matrix_data(IOdev, {array, integer, general}) ->
 	    Error;
 	{Nrows, Ncols} ->
 	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_array_integer(IOdev, Nrows, Ncols, M)
+	    read_data_array_integer(IOdev, Nrows, Ncols, 1, M)
     end;
 
 mm_read_matrix_data(_IOdev, _Banner) ->
@@ -550,30 +550,28 @@ read_data_entry(IOdev, Fmt) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_data_array_integer(iodev(), integer(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
-read_data_array_integer(IOdev, Nrows, Ncols, M) ->
-    lists:foreach(fun
-		      (Col_num) ->
-			  Col_list = read_data_col_integer(IOdev, Nrows, []),
-			  matrix:set_col_list(Col_num, Col_list, M)
-		  end,
-		  lists:seq(1,Ncols)),
-    M.
+-spec read_data_array_integer(iodev(), integer(), integer(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
+read_data_array_integer(_IOdev, _Nrows, 0, _Col_num, M) ->
+    M;
+read_data_array_integer(IOdev, Nrows, Ncols, Col_num, M) ->
+    Col_list = read_data_col(IOdev, "~d", Nrows, []),
+    M2 = matrix:set_col_list(Col_num, Col_list, M),
+    read_data_array_integer(IOdev, Nrows, Ncols-1, Col_num+1, M2).
 
 %%--------------------------------------------------------------------
 %% @doc Read a column of data for the given number of rows.
 %%
-%% The column data is returned as a list of integers.
+%% The column data is returned as a list of values, based on `Fmt'.
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_data_col_integer(iodev(), integer(), [integer()]) -> [integer()] | mtxerror().
-read_data_col_integer(_IOdev, 0, Col_list) ->
+-spec read_data_col(iodev(), string(), integer(), [integer()]) -> [integer()] | mtxerror().
+read_data_col(_IOdev, _Fmt, 0, Col_list) ->
     lists:reverse(Col_list);
-read_data_col_integer(IOdev, Nelems, Col_list) ->
-    case read_data_entry(IOdev, "~d") of
-	[Value] when is_integer(Value) ->
-	    read_data_col_integer(IOdev, Nelems-1, [Value|Col_list]);
-	Error ->
-	    Error
+read_data_col(IOdev, Fmt, Nelems, Col_list) ->
+    case read_data_entry(IOdev, Fmt) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	[Value] ->
+	    read_data_col(IOdev, Fmt, Nelems-1, [Value|Col_list])
     end.
