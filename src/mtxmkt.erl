@@ -38,7 +38,6 @@
 -type mtxtype() :: real | complex | pattern | integer.
 -type mtxsymm() :: general | symmetric | hermitian | 'skew-symmetric'.
 -type mtxcode() :: {mtxformat(), mtxtype(), mtxsymm()}.
--type complex() :: {float(), float()}.
 -type iodev() :: file:io_device().
 
 
@@ -359,86 +358,6 @@ read_mtx_size(IOdev, Line_fmt) ->
 	end.
 
 %%--------------------------------------------------------------------
-%% @doc Read a line of coordinates (for pattern type) from the open file.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec read_crd_patt(iodev()) -> {integer(), integer()} | mtxerror().
-read_crd_patt(IOdev) ->
-    case read_next_line(IOdev) of
-	Line when is_list(Line) ->
-	    case io_lib:fread("~d ~d", Line) of
-		{ok, [Row, Col], []} ->
-		    {Row, Col};
-		_ ->
-		    {error, mm_invalid_entry, "Expected int/int"}
-	    end;
-	Error ->
-	    Error
-    end.
-
-%%--------------------------------------------------------------------
-%% @doc Read a line of coordinates and integer value from the open
-%% file.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec read_crd_int(iodev()) -> {integer(), integer(), integer()} | mtxerror().
-read_crd_int(IOdev) ->
-    case read_next_line(IOdev) of
-	Line when is_list(Line) ->
-	    case io_lib:fread("~d ~d ~d", Line) of
-		{ok, [Row, Col, Value], []} ->
-		    {Row, Col, Value};
-		_ ->
-		    {error, mm_invalid_entry, "Expected int/int/int"}
-	    end;
-	Error ->
-	    Error
-    end.
-
-%%--------------------------------------------------------------------
-%% @doc Read a line of coordinates and float value from the open file.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec read_crd_float(iodev()) -> {integer(), integer(), float()} | mtxerror().
-read_crd_float(IOdev) ->
-    case read_next_line(IOdev) of
-	Line when is_list(Line) ->
-	    case io_lib:fread("~d ~d ~f", Line) of
-		{ok, [Row, Col, Value], []} ->
-		    {Row, Col, Value};
-		_ ->
-		    {error, mm_invalid_entry, "Expected int/int/float"}
-	    end;
-	Error ->
-	    Error
-    end.
-
-%%--------------------------------------------------------------------
-%% @doc Read a line of coordinates and complex value from the open
-%% file.
-%%
-%% The complex value is stored as a tuple of two floats.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec read_crd_complex(iodev()) -> {integer(), integer(), complex()} | mtxerror().
-read_crd_complex(IOdev) ->
-    case read_next_line(IOdev) of
-	Line when is_list(Line) ->
-	    case io_lib:fread("~d ~d ~f ~f", Line) of
-		{ok, [Row, Col, Real, Imag], []} ->
-		    {Row, Col, {Real, Imag}};
-		_ ->
-		    {error, mm_invalid_entry, "Expected int/int/float/float"}
-	    end;
-	Error ->
-	    Error
-    end.
-
-%%--------------------------------------------------------------------
 %% @doc Read the `coordinate' `pattern' data from the open file.
 %%
 %% An initialized matrix with the correct dimentsion should be
@@ -450,8 +369,8 @@ read_crd_complex(IOdev) ->
 read_data_crd_pattern(_IOdev, 0, M) ->
     M;
 read_data_crd_pattern(IOdev, Nelems, M) ->
-    case read_crd_patt(IOdev) of
-	{Row, Col} ->
+    case read_data_entry(IOdev, "~d ~d") of
+	[Row, Col] ->
 	    read_data_crd_pattern(IOdev, Nelems-1, matrix:set(Row, Col, 1, M));
 	Error ->
 	    Error
@@ -469,10 +388,10 @@ read_data_crd_pattern(IOdev, Nelems, M) ->
 read_data_crd_integer(_IOdev, 0, M) ->
     M;
 read_data_crd_integer(IOdev, Nelems, M) ->
-    case read_crd_int(IOdev) of
+    case read_data_entry(IOdev, "~d ~d ~d") of
 	Error = {error, _Reason, _Msg} ->
 	    Error;
-	{Row, Col, Value} ->
+	[Row, Col, Value] ->
 	    read_data_crd_integer(IOdev, Nelems-1, matrix:set(Row, Col, Value, M))
     end.
 
@@ -491,10 +410,10 @@ read_data_crd_integer(IOdev, Nelems, M) ->
 read_data_crd_real(_IOdev, 0, M) ->
     M;
 read_data_crd_real(IOdev, Nelems, M) ->
-    case read_crd_float(IOdev) of
+    case read_data_entry(IOdev, "~d ~d ~f") of
 	Error = {error, _Reason, _Msg} ->
 	    Error;
-	{Row, Col, Value} ->
+	[Row, Col, Value] ->
 	    read_data_crd_real(IOdev, Nelems-1, matrix:set(Row, Col, Value, M))
     end.
 
@@ -515,11 +434,11 @@ read_data_crd_real(IOdev, Nelems, M) ->
 read_data_crd_complex(_IOdev, 0, M) ->
     M;
 read_data_crd_complex(IOdev, Nelems, M) ->
-    case read_crd_complex(IOdev) of
+    case read_data_entry(IOdev, "~d ~d ~f ~f") of
 	Error = {error, _Reason, _Msg} ->
 	    Error;
-	{Row, Col, Value} ->
-	    read_data_crd_complex(IOdev, Nelems-1, matrix:set(Row, Col, Value, M))
+	[Row, Col, Real, Imag] ->
+	    read_data_crd_complex(IOdev, Nelems-1, matrix:set(Row, Col, {Real, Imag}, M))
     end.
 
 %%--------------------------------------------------------------------
