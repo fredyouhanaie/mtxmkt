@@ -103,7 +103,7 @@ mm_read_mtx_crd_size(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec mm_read_mtx_array_size(iodev()) -> {integer(), integer()}.
+-spec mm_read_mtx_array_size(iodev()) -> {integer(), integer()} | mtxerror().
 mm_read_mtx_array_size(IOdev) ->
     read_mtx_size(IOdev, "~d ~d").
 
