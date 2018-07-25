@@ -39,7 +39,7 @@
 -type mtxsymm() :: general | symmetric | hermitian | 'skew-symmetric'.
 -type mtxcode() :: {mtxformat(), mtxtype(), mtxsymm()}.
 -type iodev() :: file:io_device().
-
+-type complex() :: {float(), float()}.
 
 %%====================================================================
 %% API functions
@@ -193,6 +193,15 @@ mm_read_matrix_data(IOdev, {array, real, general}) ->
 	{Nrows, Ncols} ->
 	    M = matrix:new(Nrows, Ncols, 0.0),
 	    read_data_array(IOdev, "~f", Nrows, Ncols, 1, M)
+    end;
+
+mm_read_matrix_data(IOdev, {array, complex, general}) ->
+    case mm_read_mtx_array_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols} ->
+	    M = matrix:new(Nrows, Ncols, {0.0, 0.0}),
+	    read_data_array(IOdev, "~f ~f", Nrows, Ncols, 1, M)
     end;
 
 mm_read_matrix_data(_IOdev, _Banner) ->
@@ -478,7 +487,8 @@ read_data_entry(IOdev, Fmt) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_data_col(iodev(), string(), integer(), [integer()]) -> [integer()] | mtxerror().
+-spec read_data_col(iodev(), string(), integer(), [integer()] | [float()] | complex())
+		   -> [integer()] | [float() | complex()] | mtxerror().
 read_data_col(_IOdev, _Fmt, 0, Col_list) ->
     lists:reverse(Col_list);
 read_data_col(IOdev, Fmt, Nelems, Col_list) ->
@@ -486,7 +496,9 @@ read_data_col(IOdev, Fmt, Nelems, Col_list) ->
 	Error = {error, _Reason, _Msg} ->
 	    Error;
 	[Value] ->
-	    read_data_col(IOdev, Fmt, Nelems-1, [Value|Col_list])
+	    read_data_col(IOdev, Fmt, Nelems-1, [Value|Col_list]);
+	[Value1, Value2] ->	% complex numbers
+	    read_data_col(IOdev, Fmt, Nelems-1, [{Value1, Value2}|Col_list])
     end.
 
 %%--------------------------------------------------------------------

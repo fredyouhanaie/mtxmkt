@@ -32,6 +32,7 @@
 -define(File_valid_crd_complex_gen, "test/data/testfile-valid-crd-complex-gen.mtx").
 -define(File_valid_array_int_gen, "test/data/testfile-valid-array-int-gen.mtx").
 -define(File_valid_array_real_gen, "test/data/testfile-valid-array-real-gen.mtx").
+-define(File_valid_array_complex_gen, "test/data/testfile-valid-array-complex-gen.mtx").
 
 %%--------------------------------------------------------------------
 %% The tests
@@ -200,3 +201,13 @@ valid_array_int_gen_test() ->
 valid_array_real_gen_test() ->
     M = mtxmkt:mm_readfile(?File_valid_array_real_gen),
     ?assertMatch([[1.1,2.2,3.3],[4.4,5.5,6.6],[7.7,8.8,9.9]], matrix:to_list(M)).
+
+% valid coordinate complex general
+valid_array_complex_gen_test() ->
+    M = mtxmkt:mm_readfile(?File_valid_array_complex_gen),
+    ?assertMatch([
+		  [{1.1,1.2}, {2.2,2.3}, {3.3,3.4}],
+		  [{4.4,4.5}, {5.5,5.6}, {6.6,6.7}],
+		  [{7.7,7.8}, {8.8,8.9}, {9.9,9.1}]
+		 ],
+		 matrix:to_list(M)).
