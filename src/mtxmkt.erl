@@ -183,7 +183,7 @@ mm_read_matrix_data(IOdev, {array, integer, general}) ->
 	    Error;
 	{Nrows, Ncols} ->
 	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_array_integer(IOdev, Nrows, Ncols, 1, M)
+	    read_data_array(IOdev, "~d", Nrows, Ncols, 1, M)
     end;
 
 mm_read_matrix_data(IOdev, {array, real, general}) ->
@@ -191,8 +191,8 @@ mm_read_matrix_data(IOdev, {array, real, general}) ->
 	Error = {error, _Reason, _Msg} ->
 	    Error;
 	{Nrows, Ncols} ->
-	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_array_real(IOdev, Nrows, Ncols, 1, M)
+	    M = matrix:new(Nrows, Ncols, 0.0),
+	    read_data_array(IOdev, "~f", Nrows, Ncols, 1, M)
     end;
 
 mm_read_matrix_data(_IOdev, _Banner) ->
@@ -472,36 +472,6 @@ read_data_entry(IOdev, Fmt) ->
     end.
 
 %%--------------------------------------------------------------------
-%% @doc Read the `array' `integer' data from the open file.
-%%
-%% The data is returned as a matrix.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec read_data_array_integer(iodev(), integer(), integer(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
-read_data_array_integer(_IOdev, _Nrows, 0, _Col_num, M) ->
-    M;
-read_data_array_integer(IOdev, Nrows, Ncols, Col_num, M) ->
-    Col_list = read_data_col(IOdev, "~d", Nrows, []),
-    M2 = matrix:set_col_list(Col_num, Col_list, M),
-    read_data_array_integer(IOdev, Nrows, Ncols-1, Col_num+1, M2).
-
-%%--------------------------------------------------------------------
-%% @doc Read the `array' `real' data from the open file.
-%%
-%% The data is returned as a matrix.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec read_data_array_real(iodev(), integer(), integer(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
-read_data_array_real(_IOdev, _Nrows, 0, _Col_num, M) ->
-    M;
-read_data_array_real(IOdev, Nrows, Ncols, Col_num, M) ->
-    Col_list = read_data_col(IOdev, "~f", Nrows, []),
-    M2 = matrix:set_col_list(Col_num, Col_list, M),
-    read_data_array_real(IOdev, Nrows, Ncols-1, Col_num+1, M2).
-
-%%--------------------------------------------------------------------
 %% @doc Read a column of data for the given number of rows.
 %%
 %% The column data is returned as a list of values, based on `Fmt'.
@@ -518,3 +488,18 @@ read_data_col(IOdev, Fmt, Nelems, Col_list) ->
 	[Value] ->
 	    read_data_col(IOdev, Fmt, Nelems-1, [Value|Col_list])
     end.
+
+%%--------------------------------------------------------------------
+%% @doc Read the `array' `integer'/`real'/`complex' data from the open file.
+%%
+%% The data is returned as a matrix.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_data_array(iodev(), string(), integer(), integer(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
+read_data_array(_IOdev, _Fmt, _Nrows, 0, _Col_num, M) ->
+    M;
+read_data_array(IOdev, Fmt, Nrows, Ncols, Col_num, M) ->
+    Col_list = read_data_col(IOdev, Fmt, Nrows, []),
+    M2 = matrix:set_col_list(Col_num, Col_list, M),
+    read_data_array(IOdev, Fmt, Nrows, Ncols-1, Col_num+1, M2).
