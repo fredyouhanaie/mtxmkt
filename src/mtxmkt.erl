@@ -157,7 +157,7 @@ mm_read_matrix_data(IOdev, {coordinate, pattern, general}) ->
 	    Error;
 	{Nrows, Ncols, Nelems} ->
 	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_crd_pattern(IOdev, Nelems, M)
+	    read_data_crd(IOdev, "~d ~d", Nelems, M)
     end;
 
 mm_read_matrix_data(IOdev, {coordinate, integer, general}) ->
@@ -166,7 +166,7 @@ mm_read_matrix_data(IOdev, {coordinate, integer, general}) ->
 	    Error;
 	{Nrows, Ncols, Nelems} ->
 	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_crd_integer(IOdev, Nelems, M)
+	    read_data_crd(IOdev, "~d ~d ~d", Nelems, M)
     end;
 
 mm_read_matrix_data(IOdev, {coordinate, real, general}) ->
@@ -175,7 +175,7 @@ mm_read_matrix_data(IOdev, {coordinate, real, general}) ->
 	    Error;
 	{Nrows, Ncols, Nelems} ->
 	    M = matrix:new(Nrows, Ncols, 0.0),
-	    read_data_crd_real(IOdev, Nelems, M)
+	    read_data_crd(IOdev, "~d ~d ~f", Nelems, M)
     end;
 
 mm_read_matrix_data(IOdev, {coordinate, complex, general}) ->
@@ -184,7 +184,7 @@ mm_read_matrix_data(IOdev, {coordinate, complex, general}) ->
 	    Error;
 	{Nrows, Ncols, Nelems} ->
 	    M = matrix:new(Nrows, Ncols, {0.0, 0.0}),
-	    read_data_crd_complex(IOdev, Nelems, M)
+	    read_data_crd(IOdev, "~d ~d ~f ~f", Nelems, M)
     end;
 
 mm_read_matrix_data(IOdev, {array, integer, general}) ->
@@ -388,87 +388,46 @@ read_mtx_size(IOdev, Line_fmt) ->
 	end.
 
 %%--------------------------------------------------------------------
-%% @doc Read the `coordinate' `pattern' data from the open file.
+%% @doc Read the `coordinate' data from the open file.
 %%
-%% An initialized matrix with the correct dimentsion should be
-%% provided. The data is returned in a `matrix'.
+%% `Nelems' lines of coordinates `integer' `integer' along with the
+%% data values will be read.  The `Fmt' argument determines wheter we
+%% should read just a pair of coordinates for pattern data, or single
+%% or pairs of values.
 %%
-%% @end
-%%--------------------------------------------------------------------
--spec read_data_crd_pattern(iodev(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
-read_data_crd_pattern(_IOdev, 0, M) ->
-    M;
-read_data_crd_pattern(IOdev, Nelems, M) ->
-    case read_data_entry(IOdev, "~d ~d") of
-	[Row, Col] ->
-	    read_data_crd_pattern(IOdev, Nelems-1, matrix:set(Row, Col, 1, M));
-	Error ->
-	    Error
-    end.
-
-%%--------------------------------------------------------------------
-%% @doc Read the `coordinate' `integer' data from the open file.
+%% `Fmt' should be one of "~d ~d" (patterm), "~d ~d ~d" (integer), "~d
+%% ~d ~f" (real) or "~d ~d ~f ~f" (complex).
 %%
-%% An initialized matrix with the correct dimentsion should be
-%% provided. The data is returned in a `matrix'.
+%% An initialized matrix with the correct dimensions and default value
+%% should be provided. The data is returned in a `matrix'.
+%%
+%% The `matrix:set/4' function will check if the coordinates are
+%% within the matrix dimensions.
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_data_crd_integer(iodev(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
-read_data_crd_integer(_IOdev, 0, M) ->
+-spec read_data_crd(iodev(), string(), integer(), matrix:matrix()) -> matrix:matrix()|mtxerror().
+read_data_crd(_IOdev, _Fmt, 0, M) ->
     M;
-read_data_crd_integer(IOdev, Nelems, M) ->
-    case read_data_entry(IOdev, "~d ~d ~d") of
+read_data_crd(IOdev, Fmt, Nelems, M) ->
+    case read_data_entry(IOdev, Fmt) of
 	Error = {error, _Reason, _Msg} ->
 	    Error;
-	[Row, Col, Value] ->
-	    read_data_crd_integer(IOdev, Nelems-1, matrix:set(Row, Col, Value, M))
-    end.
-
-%%--------------------------------------------------------------------
-%% @doc Read the `coordinate' `real' data from the open file.
-%%
-%% `Nelems' lines of `integer' `integer' `float' will be read from the
-%% open file. The data is returned in a `matrix'.
-%%
-%% An initialized matrix with the correct dimension should be
-%% provided.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec read_data_crd_real(iodev(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
-read_data_crd_real(_IOdev, 0, M) ->
-    M;
-read_data_crd_real(IOdev, Nelems, M) ->
-    case read_data_entry(IOdev, "~d ~d ~f") of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	[Row, Col, Value] ->
-	    read_data_crd_real(IOdev, Nelems-1, matrix:set(Row, Col, Value, M))
-    end.
-
-%%--------------------------------------------------------------------
-%% @doc Read the `coordinate' `complex' data from the open file.
-%%
-%% `Nelems' lines of `integer' `integer' `float' `float' will be read
-%% from the open file. The data is returned in a `matrix'.
-%%
-%% Internally the complex value is stored as a tuple of two floats.
-%%
-%% An initialized matrix with the correct dimension should be
-%% provided.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec read_data_crd_complex(iodev(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
-read_data_crd_complex(_IOdev, 0, M) ->
-    M;
-read_data_crd_complex(IOdev, Nelems, M) ->
-    case read_data_entry(IOdev, "~d ~d ~f ~f") of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	[Row, Col, Real, Imag] ->
-	    read_data_crd_complex(IOdev, Nelems-1, matrix:set(Row, Col, {Real, Imag}, M))
+	[Row, Col|Entry] ->
+	    Value = case Entry of
+			[] ->		% pattern
+			    1;
+			[Scalar] ->	% integer or real
+			    Scalar;
+			[Real, Imag] ->	% complex number
+			    {Real, Imag}
+		    end,
+	    case matrix:set(Row, Col, Value, M) of
+		outofbounds ->
+		    {error, mm_invalid_coord, "Invalid matrix coordinates"};
+		M2 ->
+		    read_data_crd(IOdev, Fmt, Nelems-1, M2)
+	    end
     end.
 
 %%--------------------------------------------------------------------
