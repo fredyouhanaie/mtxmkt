@@ -92,7 +92,17 @@ mm_read_banner(IOdev) ->
 %%--------------------------------------------------------------------
 -spec mm_read_mtx_crd_size(iodev()) -> {integer(), integer(), integer()} | mtxerror().
 mm_read_mtx_crd_size(IOdev) ->
-    read_mtx_size(IOdev, "~d ~d ~d").
+    case read_mtx_size(IOdev, "~d ~d ~d") of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols, Nelems} ->
+	    if
+		Nrows*Ncols < Nelems ->
+		    {error, mm_invalid_size, "Matrix element count is greater than its size."};
+		true ->
+		    {Nrows, Ncols, Nelems}
+	    end
+    end.
 
 %%--------------------------------------------------------------------
 %% @doc Get the size of the matrix in array format.
@@ -364,12 +374,14 @@ read_mtx_size(IOdev, Line_fmt) ->
     case skip_comments(IOdev) of
 	Line when is_list(Line) ->
 	    case io_lib:fread(Line_fmt, Line) of
-		{ok, [Row, Col], []} ->
-		    {Row, Col};
-		{ok, [Row, Col, Nelems], []} ->
-		    {Row, Col, Nelems};
+		{ok, [Nrows, Ncols], []}
+		  when Nrows>0 andalso Ncols>0 ->
+		    {Nrows, Ncols};
+		{ok, [Nrows, Ncols, Nelems], []}
+		  when Nrows>0 andalso Ncols>0 andalso Nelems>0 ->
+		    {Nrows, Ncols, Nelems};
 		_ ->
-		    {error, mm_invalid_entry, "Expected int/int or int/int/int"}
+		    {error, mm_invalid_size, "Expected positive int/int or int/int/int"}
 	    end;
 	Error ->
 	    Error
