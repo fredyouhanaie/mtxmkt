@@ -157,7 +157,7 @@ mm_read_matrix_data(IOdev, {coordinate, pattern, general}) ->
 	    Error;
 	{Nrows, Ncols, Nelems} ->
 	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_crd(IOdev, "~d ~d", Nelems, M)
+	    read_data_crd(IOdev, "~d ~d", Nelems, M, general)
     end;
 
 mm_read_matrix_data(IOdev, {coordinate, integer, general}) ->
@@ -166,7 +166,7 @@ mm_read_matrix_data(IOdev, {coordinate, integer, general}) ->
 	    Error;
 	{Nrows, Ncols, Nelems} ->
 	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_crd(IOdev, "~d ~d ~d", Nelems, M)
+	    read_data_crd(IOdev, "~d ~d ~d", Nelems, M, general)
     end;
 
 mm_read_matrix_data(IOdev, {coordinate, real, general}) ->
@@ -175,7 +175,7 @@ mm_read_matrix_data(IOdev, {coordinate, real, general}) ->
 	    Error;
 	{Nrows, Ncols, Nelems} ->
 	    M = matrix:new(Nrows, Ncols, 0.0),
-	    read_data_crd(IOdev, "~d ~d ~f", Nelems, M)
+	    read_data_crd(IOdev, "~d ~d ~f", Nelems, M, general)
     end;
 
 mm_read_matrix_data(IOdev, {coordinate, complex, general}) ->
@@ -184,7 +184,7 @@ mm_read_matrix_data(IOdev, {coordinate, complex, general}) ->
 	    Error;
 	{Nrows, Ncols, Nelems} ->
 	    M = matrix:new(Nrows, Ncols, {0.0, 0.0}),
-	    read_data_crd(IOdev, "~d ~d ~f ~f", Nelems, M)
+	    read_data_crd(IOdev, "~d ~d ~f ~f", Nelems, M, general)
     end;
 
 mm_read_matrix_data(IOdev, {array, integer, general}) ->
@@ -243,6 +243,50 @@ mm_read_matrix_data(IOdev, {array, complex, symmetric}) ->
 	{Nrows, Ncols} when Nrows == Ncols ->
 	    M = matrix:new(Nrows, Ncols, 0),
 	    read_data_array_symm(IOdev, "~f ~f", Nrows, Ncols, 1, M);
+	_ ->
+	    {error, mm_invalid_size, "Symmetric matrices must be square."}
+    end;
+
+mm_read_matrix_data(IOdev, {coordinate, pattern, symmetric}) ->
+    case mm_read_mtx_crd_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols, Nelems} when Nrows == Ncols ->
+	    M = matrix:new(Nrows, Ncols, 0),
+	    read_data_crd(IOdev, "~d ~d", Nelems, M, symmetric);
+	_ ->
+	    {error, mm_invalid_size, "Symmetric matrices must be square."}
+    end;
+
+mm_read_matrix_data(IOdev, {coordinate, integer, symmetric}) ->
+    case mm_read_mtx_crd_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols, Nelems} when Nrows == Ncols ->
+	    M = matrix:new(Nrows, Ncols, 0),
+	    read_data_crd(IOdev, "~d ~d ~d", Nelems, M, symmetric);
+	_ ->
+	    {error, mm_invalid_size, "Symmetric matrices must be square."}
+    end;
+
+mm_read_matrix_data(IOdev, {coordinate, real, symmetric}) ->
+    case mm_read_mtx_crd_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols, Nelems} when Nrows == Ncols ->
+	    M = matrix:new(Nrows, Ncols, 0.0),
+	    read_data_crd(IOdev, "~d ~d ~f", Nelems, M, symmetric);
+	_ ->
+	    {error, mm_invalid_size, "Symmetric matrices must be square."}
+    end;
+
+mm_read_matrix_data(IOdev, {coordinate, complex, symmetric}) ->
+    case mm_read_mtx_crd_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols, Nelems} when Nrows == Ncols ->
+	    M = matrix:new(Nrows, Ncols, {0.0, 0.0}),
+	    read_data_crd(IOdev, "~d ~d ~f ~f", Nelems, M, symmetric);
 	_ ->
 	    {error, mm_invalid_size, "Symmetric matrices must be square."}
     end;
@@ -439,10 +483,10 @@ read_mtx_size(IOdev, Line_fmt) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_data_crd(iodev(), string(), integer(), matrix:matrix()) -> matrix:matrix()|mtxerror().
-read_data_crd(_IOdev, _Fmt, 0, M) ->
+-spec read_data_crd(iodev(), string(), integer(), matrix:matrix(), mtxsymm()) -> matrix:matrix()|mtxerror().
+read_data_crd(_IOdev, _Fmt, 0, M, _Symm) ->
     M;
-read_data_crd(IOdev, Fmt, Nelems, M) ->
+read_data_crd(IOdev, Fmt, Nelems, M, Symm) ->
     case read_data_entry(IOdev, Fmt) of
 	Error = {error, _Reason, _Msg} ->
 	    Error;
@@ -459,9 +503,22 @@ read_data_crd(IOdev, Fmt, Nelems, M) ->
 		outofbounds ->
 		    {error, mm_invalid_coord, "Invalid matrix coordinates"};
 		M2 ->
-		    read_data_crd(IOdev, Fmt, Nelems-1, M2)
+		    M3 = case Symm of
+			     general ->
+				 M2;
+			     symmetric ->
+				 matrix:set(Col, Row, Value, M2);
+			     'skew-symmetric' ->
+				 matrix:set(Col, Row, -Value, M2);
+			     hermitian ->
+				 matrix:set(Col, Row, conjugate(Value), M2)
+			 end,
+		    read_data_crd(IOdev, Fmt, Nelems-1, M3, Symm)
 	    end
     end.
+
+conjugate({Real, Imag}) ->
+    {Real, -Imag}.
 
 %%--------------------------------------------------------------------
 %% @doc Read and parse single line of data.

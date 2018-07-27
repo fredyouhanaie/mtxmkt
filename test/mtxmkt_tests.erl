@@ -26,18 +26,26 @@
 -define(File_invalid_size_array_2, "test/data/testfile-size-invalid-array-2.mtx").
 -define(File_valid_size_crd, "test/data/testfile-size-valid-crd.mtx").
 -define(File_valid_size_array, "test/data/testfile-size-valid-array.mtx").
--define(File_valid_crd_patt_gen, "test/data/testfile-valid-crd-patt-gen.mtx").
 -define(File_short_crd_patt_gen, "test/data/testfile-short-crd-patt-gen.mtx").
 -define(File_invalid_crd_patt_gen, "test/data/testfile-invalid-crd-patt-gen.mtx").
+
+-define(File_valid_crd_patt_gen, "test/data/testfile-valid-crd-patt-gen.mtx").
 -define(File_valid_crd_int_gen, "test/data/testfile-valid-crd-int-gen.mtx").
 -define(File_valid_crd_real_gen, "test/data/testfile-valid-crd-real-gen.mtx").
 -define(File_valid_crd_complex_gen, "test/data/testfile-valid-crd-complex-gen.mtx").
+
 -define(File_valid_array_int_gen, "test/data/testfile-valid-array-int-gen.mtx").
 -define(File_valid_array_real_gen, "test/data/testfile-valid-array-real-gen.mtx").
 -define(File_valid_array_complex_gen, "test/data/testfile-valid-array-complex-gen.mtx").
+
 -define(File_valid_array_int_symm, "test/data/testfile-valid-array-int-symm.mtx").
 -define(File_valid_array_real_symm, "test/data/testfile-valid-array-real-symm.mtx").
 -define(File_valid_array_complex_symm, "test/data/testfile-valid-array-complex-symm.mtx").
+
+-define(File_valid_crd_patt_symm, "test/data/testfile-valid-crd-patt-symm.mtx").
+-define(File_valid_crd_int_symm, "test/data/testfile-valid-crd-int-symm.mtx").
+-define(File_valid_crd_real_symm, "test/data/testfile-valid-crd-real-symm.mtx").
+-define(File_valid_crd_complex_symm, "test/data/testfile-valid-crd-complex-symm.mtx").
 
 %%--------------------------------------------------------------------
 %% The tests
@@ -262,3 +270,43 @@ valid_array_complex_symm_test() ->
 		  [{13.3, 13.4}, {16.6, 16.7}, {18.8, 18.9}, {19.9, 19.0}],
 		  [{14.4, 14.5}, {17.7, 17.8}, {19.9, 19.0}, {20.0, 20.1}]
 		 ], matrix:to_list(M)).
+
+% valid coordinate pattern symmetric
+valid_crd_patt_symm_test() ->
+    M = mtxmkt:mm_readfile(?File_valid_crd_patt_symm),
+    ?assertMatch([
+		  [1,0,1,0],
+		  [0,1,0,1],
+		  [1,0,1,0],
+		  [0,1,0,1]
+		  ],  matrix:to_list(M)).
+
+% valid coordinate integer symmetric
+valid_crd_int_symm_test() ->
+    M = mtxmkt:mm_readfile(?File_valid_crd_int_symm),
+    ?assertMatch([
+		  [1,0,2,0],
+		  [0,3,0,4],
+		  [2,0,5,0],
+		  [0,4,0,6]
+		  ],  matrix:to_list(M)).
+
+% valid coordinate real symmetric
+valid_crd_real_symm_test() ->
+    M = mtxmkt:mm_readfile(?File_valid_crd_real_symm),
+    ?assertMatch([
+		  [1.1,0.0,4.4,0.0],
+		  [0.0,3.3,0.0,0.0],
+		  [4.4,0.0,5.5,0.0],
+		  [0.0,0.0,0.0,6.6]
+		 ],  matrix:to_list(M)).
+
+% valid coordinate complex symmetric
+valid_crd_complex_symm_test() ->
+    M = mtxmkt:mm_readfile(?File_valid_crd_complex_symm),
+    ?assertMatch([
+		  [{1.1,1.2},{0.0,0.0},{4.4,4.5},{0.0,0.0}],
+		  [{0.0,0.0},{3.3,3.4},{0.0,0.0},{0.0,0.0}],
+		  [{4.4,4.5},{0.0,0.0},{5.5,5.6},{0.0,0.0}],
+		  [{0.0,0.0},{0.0,0.0},{0.0,0.0},{6.6,6.7}]
+		  ],  matrix:to_list(M)).
