@@ -35,6 +35,9 @@
 -define(File_valid_array_int_gen, "test/data/testfile-valid-array-int-gen.mtx").
 -define(File_valid_array_real_gen, "test/data/testfile-valid-array-real-gen.mtx").
 -define(File_valid_array_complex_gen, "test/data/testfile-valid-array-complex-gen.mtx").
+-define(File_valid_array_int_symm, "test/data/testfile-valid-array-int-symm.mtx").
+-define(File_valid_array_real_symm, "test/data/testfile-valid-array-real-symm.mtx").
+-define(File_valid_array_complex_symm, "test/data/testfile-valid-array-complex-symm.mtx").
 
 %%--------------------------------------------------------------------
 %% The tests
@@ -229,3 +232,33 @@ valid_array_complex_gen_test() ->
 		  [{7.7,7.8}, {8.8,8.9}, {9.9,9.1}]
 		 ],
 		 matrix:to_list(M)).
+
+% valid array integer symmetric
+valid_array_int_symm_test() ->
+    M = mtxmkt:mm_readfile(?File_valid_array_int_symm),
+    ?assertMatch([
+		  [11, 12, 13, 14],
+		  [12, 15, 16, 17],
+		  [13, 16, 18, 19],
+		  [14, 17, 19, 20]
+		 ], matrix:to_list(M)).
+
+% valid array real symmetric
+valid_array_real_symm_test() ->
+    M = mtxmkt:mm_readfile(?File_valid_array_real_symm),
+    ?assertMatch([
+		  [1.1, 1.2, 1.3, 1.4],
+		  [1.2, 1.5, 1.6, 1.7],
+		  [1.3, 1.6, 1.8, 1.9],
+		  [1.4, 1.7, 1.9, 2.0]
+		 ], matrix:to_list(M)).
+
+% valid array complex symmetric
+valid_array_complex_symm_test() ->
+    M = mtxmkt:mm_readfile(?File_valid_array_complex_symm),
+    ?assertMatch([
+		  [{11.1, 11.2}, {12.2, 12.3}, {13.3, 13.4}, {14.4, 14.5}],
+		  [{12.2, 12.3}, {15.5, 15.6}, {16.6, 16.7}, {17.7, 17.8}],
+		  [{13.3, 13.4}, {16.6, 16.7}, {18.8, 18.9}, {19.9, 19.0}],
+		  [{14.4, 14.5}, {17.7, 17.8}, {19.9, 19.0}, {20.0, 20.1}]
+		 ], matrix:to_list(M)).

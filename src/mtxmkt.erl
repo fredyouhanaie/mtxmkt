@@ -214,6 +214,39 @@ mm_read_matrix_data(IOdev, {array, complex, general}) ->
 	    read_data_array(IOdev, "~f ~f", Nrows, Ncols, 1, M)
     end;
 
+mm_read_matrix_data(IOdev, {array, integer, symmetric}) ->
+    case mm_read_mtx_array_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols} when Nrows == Ncols ->
+	    M = matrix:new(Nrows, Ncols, 0),
+	    read_data_array_symm(IOdev, "~d", Nrows, Ncols, 1, M);
+	_ ->
+	    {error, mm_invalid_size, "Symmetric matrices must be square."}
+    end;
+
+mm_read_matrix_data(IOdev, {array, real, symmetric}) ->
+    case mm_read_mtx_array_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols} when Nrows == Ncols ->
+	    M = matrix:new(Nrows, Ncols, 0.0),
+	    read_data_array_symm(IOdev, "~f", Nrows, Ncols, 1, M);
+	_ ->
+	    {error, mm_invalid_size, "Symmetric matrices must be square."}
+    end;
+
+mm_read_matrix_data(IOdev, {array, complex, symmetric}) ->
+    case mm_read_mtx_array_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols} when Nrows == Ncols ->
+	    M = matrix:new(Nrows, Ncols, 0),
+	    read_data_array_symm(IOdev, "~f ~f", Nrows, Ncols, 1, M);
+	_ ->
+	    {error, mm_invalid_size, "Symmetric matrices must be square."}
+    end;
+
 mm_read_matrix_data(_IOdev, _Banner) ->
     {error, mm_notsupported, "Unsupported matrix type!"}.
 
@@ -486,3 +519,34 @@ read_data_array(IOdev, Fmt, Nrows, Ncols, Col_num, M) ->
     Col_list = read_data_col(IOdev, Fmt, Nrows, []),
     M2 = matrix:set_col_list(Col_num, Col_list, M),
     read_data_array(IOdev, Fmt, Nrows, Ncols-1, Col_num+1, M2).
+
+%%--------------------------------------------------------------------
+%% @doc Read the `symmetric' `array' `integer'/`real'/`complex' data
+%% from the open file.
+%%
+%% We read one column at a time, starting from column 1. The number
+%% elements in each column decrease by 1 each time we move to the next
+%% column.
+%%
+%% when we assign a list of values to a column, we also assign the
+%% same list to the corresponding row. The list read from the file
+%% only correspond to the elements below or to the right of the
+%% diagonal.
+%%
+%% Since the `matrix' module only allows setting of a complete
+%% row/column from a list, we need to read current contents of the
+%% row/column up to the diagonal and
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_data_array_symm(iodev(), string(), integer(), integer(), integer(), matrix:matrix())
+			  -> matrix:matrix() | mtxerror().
+read_data_array_symm(_IOdev, _Fmt, 0, 0, _Col_num, M) ->
+    M;
+read_data_array_symm(IOdev, Fmt, Nrows, Ncols, Col_num, M) ->
+    Col_list = read_data_col(IOdev, Fmt, Nrows, []),
+    Col_pref = lists:sublist(matrix:get_col_list(Col_num, M), 1, Col_num-1),
+    List = Col_pref++Col_list,
+    M2 = matrix:set_col_list(Col_num, List, M),
+    M3 = matrix:set_row_list(Col_num, List, M2),
+    read_data_array_symm(IOdev, Fmt, Nrows-1, Ncols-1, Col_num+1, M3).
