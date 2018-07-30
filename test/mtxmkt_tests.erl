@@ -192,8 +192,13 @@ valid_size_array_test() ->
 
 % valid coordinate pattern general
 valid_crd_patt_gen_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_crd_patt_gen),
-    ?assertMatch([[1,0,1],[0,1,0],[1,0,1]], matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_patt_gen),
+    ?assertMatch({{coordinate, pattern, general},
+		  [
+		   [1,0,1],
+		   [0,1,0],
+		   [1,0,1]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % short coordinate pattern general
 short_crd_patt_gen_test() ->
@@ -205,120 +210,148 @@ invalid_crd_patt_gen_test() ->
 
 % valid coordinate integer general
 valid_crd_int_gen_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_crd_int_gen),
-    ?assertMatch([[1,0,2],[0,3,0],[4,0,5]], matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_int_gen),
+    ?assertMatch({{coordinate, integer, general},
+		  [
+		   [1,0,2],
+		   [0,3,0],
+		   [4,0,5]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid coordinate real general
 valid_crd_real_gen_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_crd_real_gen),
-    ?assertMatch([[1.1,0.0,2.2],[0.0,3.3,0.0],[4.4,0.0,5.5]], matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_real_gen),
+    ?assertMatch({{coordinate, real, general},
+		  [
+		   [1.1,0.0,2.2],
+		   [0.0,3.3,0.0],
+		   [4.4,0.0,5.5]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid coordinate complex general
 valid_crd_complex_gen_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_crd_complex_gen),
-    ?assertMatch([
-		  [{1.1,1.2},{0.0,0.0},{2.2,2.3}],
-		  [{0.0,0.0},{3.3,3.4},{0.0,0.0}],
-		  [{4.4,4.5},{0.0,0.0},{5.5,5.6}]
-		 ],
-		 matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_complex_gen),
+    ?assertMatch({{coordinate, complex, general},
+		  [
+		   [{1.1,1.2},{0.0,0.0},{2.2,2.3}],
+		   [{0.0,0.0},{3.3,3.4},{0.0,0.0}],
+		   [{4.4,4.5},{0.0,0.0},{5.5,5.6}]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid array integer general
 valid_array_int_gen_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_array_int_gen),
-    ?assertMatch([[1,2,3],[4,5,6],[7,8,9]], matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_array_int_gen),
+    ?assertMatch({{array, integer, general},
+		  [
+		   [1,2,3],
+		   [4,5,6],
+		   [7,8,9]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid array real general
 valid_array_real_gen_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_array_real_gen),
-    ?assertMatch([[1.1,2.2,3.3],[4.4,5.5,6.6],[7.7,8.8,9.9]], matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_array_real_gen),
+    ?assertMatch({{array, real, general},
+		  [
+		   [1.1,2.2,3.3],
+		   [4.4,5.5,6.6],
+		   [7.7,8.8,9.9]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid coordinate complex general
 valid_array_complex_gen_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_array_complex_gen),
-    ?assertMatch([
-		  [{1.1,1.2}, {2.2,2.3}, {3.3,3.4}],
-		  [{4.4,4.5}, {5.5,5.6}, {6.6,6.7}],
-		  [{7.7,7.8}, {8.8,8.9}, {9.9,9.1}]
-		 ],
-		 matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_array_complex_gen),
+    ?assertMatch({{array, complex, general},
+		  [
+		   [{1.1,1.2}, {2.2,2.3}, {3.3,3.4}],
+		   [{4.4,4.5}, {5.5,5.6}, {6.6,6.7}],
+		   [{7.7,7.8}, {8.8,8.9}, {9.9,9.1}]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid array integer symmetric
 valid_array_int_symm_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_array_int_symm),
-    ?assertMatch([
-		  [11, 12, 13, 14],
-		  [12, 15, 16, 17],
-		  [13, 16, 18, 19],
-		  [14, 17, 19, 20]
-		 ], matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_array_int_symm),
+    ?assertMatch({{array, integer, symmetric},
+		  [
+		   [11, 12, 13, 14],
+		   [12, 15, 16, 17],
+		   [13, 16, 18, 19],
+		   [14, 17, 19, 20]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid array real symmetric
 valid_array_real_symm_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_array_real_symm),
-    ?assertMatch([
-		  [1.1, 1.2, 1.3, 1.4],
-		  [1.2, 1.5, 1.6, 1.7],
-		  [1.3, 1.6, 1.8, 1.9],
-		  [1.4, 1.7, 1.9, 2.0]
-		 ], matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_array_real_symm),
+    ?assertMatch({{array, real, symmetric},
+		  [
+		   [1.1, 1.2, 1.3, 1.4],
+		   [1.2, 1.5, 1.6, 1.7],
+		   [1.3, 1.6, 1.8, 1.9],
+		   [1.4, 1.7, 1.9, 2.0]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid array complex symmetric
 valid_array_complex_symm_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_array_complex_symm),
-    ?assertMatch([
-		  [{11.1, 11.2}, {12.2, 12.3}, {13.3, 13.4}, {14.4, 14.5}],
-		  [{12.2, 12.3}, {15.5, 15.6}, {16.6, 16.7}, {17.7, 17.8}],
-		  [{13.3, 13.4}, {16.6, 16.7}, {18.8, 18.9}, {19.9, 19.0}],
-		  [{14.4, 14.5}, {17.7, 17.8}, {19.9, 19.0}, {20.0, 20.1}]
-		 ], matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_array_complex_symm),
+    ?assertMatch({{array, complex, symmetric},
+		  [
+		   [{11.1, 11.2}, {12.2, 12.3}, {13.3, 13.4}, {14.4, 14.5}],
+		   [{12.2, 12.3}, {15.5, 15.6}, {16.6, 16.7}, {17.7, 17.8}],
+		   [{13.3, 13.4}, {16.6, 16.7}, {18.8, 18.9}, {19.9, 19.0}],
+		   [{14.4, 14.5}, {17.7, 17.8}, {19.9, 19.0}, {20.0, 20.1}]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid coordinate pattern symmetric
 valid_crd_patt_symm_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_crd_patt_symm),
-    ?assertMatch([
-		  [1,0,1,0],
-		  [0,1,0,1],
-		  [1,0,1,0],
-		  [0,1,0,1]
-		  ], matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_patt_symm),
+    ?assertMatch({{coordinate, pattern, symmetric},
+		  [
+		   [1,0,1,0],
+		   [0,1,0,1],
+		   [1,0,1,0],
+		   [0,1,0,1]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid coordinate integer symmetric
 valid_crd_int_symm_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_crd_int_symm),
-    ?assertMatch([
-		  [1,0,2,0],
-		  [0,3,0,4],
-		  [2,0,5,0],
-		  [0,4,0,6]
-		  ], matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_int_symm),
+    ?assertMatch({{coordinate, integer, symmetric},
+		  [
+		   [1,0,2,0],
+		   [0,3,0,4],
+		   [2,0,5,0],
+		   [0,4,0,6]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid coordinate real symmetric
 valid_crd_real_symm_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_crd_real_symm),
-    ?assertMatch([
-		  [1.1,0.0,4.4,2.2],
-		  [0.0,3.3,0.0,0.0],
-		  [4.4,0.0,5.5,0.0],
-		  [2.2,0.0,0.0,6.6]
-		 ], matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_real_symm),
+    ?assertMatch({{coordinate, real, symmetric},
+		  [
+		   [1.1,0.0,4.4,2.2],
+		   [0.0,3.3,0.0,0.0],
+		   [4.4,0.0,5.5,0.0],
+		   [2.2,0.0,0.0,6.6]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid coordinate complex symmetric
 valid_crd_complex_symm_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_crd_complex_symm),
-    ?assertMatch([
-		  [{1.1,1.2},{0.0,0.0},{4.4,4.5},{2.2,2.3}],
-		  [{0.0,0.0},{3.3,3.4},{0.0,0.0},{0.0,0.0}],
-		  [{4.4,4.5},{0.0,0.0},{5.5,5.6},{0.0,0.0}],
-		  [{2.2,2.3},{0.0,0.0},{0.0,0.0},{6.6,6.7}]
-		  ], matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_complex_symm),
+    ?assertMatch({{coordinate, complex, symmetric},
+		  [
+		   [{1.1,1.2},{0.0,0.0},{4.4,4.5},{2.2,2.3}],
+		   [{0.0,0.0},{3.3,3.4},{0.0,0.0},{0.0,0.0}],
+		   [{4.4,4.5},{0.0,0.0},{5.5,5.6},{0.0,0.0}],
+		   [{2.2,2.3},{0.0,0.0},{0.0,0.0},{6.6,6.7}]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid coordinate complex hermitian
 valid_crd_complex_herm_test() ->
-    M = mtxmkt:mm_readfile(?File_valid_crd_complex_herm),
-    ?assertMatch([
-		  [{1.1,1.2},{0.0,0.0},{4.4,-4.5},{2.2, -2.3}],
-		  [{0.0,0.0},{3.3,3.4},{0.0, 0.0},{0.0,  0.0}],
-		  [{4.4,4.5},{0.0,0.0},{5.5, 5.6},{0.0,  0.0}],
-		  [{2.2,2.3},{0.0,0.0},{0.0, 0.0},{6.6,  6.7}]
-		  ], matrix:to_list(M)).
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_complex_herm),
+    ?assertMatch({{coordinate, complex, hermitian},
+		  [
+		   [{1.1,1.2},{0.0,0.0},{4.4,-4.5},{2.2, -2.3}],
+		   [{0.0,0.0},{3.3,3.4},{0.0, 0.0},{0.0,  0.0}],
+		   [{4.4,4.5},{0.0,0.0},{5.5, 5.6},{0.0,  0.0}],
+		   [{2.2,2.3},{0.0,0.0},{0.0, 0.0},{6.6,  6.7}]
+		  ]}, {Mtx_code, matrix:to_list(M)}).

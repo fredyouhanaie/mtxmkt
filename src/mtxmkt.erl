@@ -33,7 +33,7 @@
 %%====================================================================
 %% Types
 %%====================================================================
--type mtxerror() ::{error, atom(), string()}.
+-type mtxerror() :: {error, atom(), string()}.
 -type mtxformat() :: array | coordinate.
 -type mtxtype() :: real | complex | pattern | integer.
 -type mtxsymm() :: general | symmetric | hermitian | 'skew-symmetric'.
@@ -123,7 +123,7 @@ mm_read_mtx_array_size(IOdev) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec mm_readfile(string()) -> matrix:matrix() | mtxerror().
+-spec mm_readfile(string()) -> {mtxcode(), matrix:matrix()} | mtxerror().
 mm_readfile(Filename) ->
     case  mm_openread(Filename) of
 	Error = {error, _Reason, _Msg} ->
@@ -137,7 +137,7 @@ mm_readfile(Filename) ->
 				 Error = {error, _Reason, _Msg} ->
 				     Error;
 				 M ->
-				     M
+				     {Mtx_code, M}
 			     end
 		     end,
 	    file:close(IOdev),
