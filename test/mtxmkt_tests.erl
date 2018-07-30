@@ -47,6 +47,8 @@
 -define(File_valid_crd_real_symm, "test/data/testfile-valid-crd-real-symm.mtx").
 -define(File_valid_crd_complex_symm, "test/data/testfile-valid-crd-complex-symm.mtx").
 
+-define(File_valid_crd_complex_herm, "test/data/testfile-valid-crd-complex-herm.mtx").
+
 %%--------------------------------------------------------------------
 %% The tests
 %%--------------------------------------------------------------------
@@ -279,7 +281,7 @@ valid_crd_patt_symm_test() ->
 		  [0,1,0,1],
 		  [1,0,1,0],
 		  [0,1,0,1]
-		  ],  matrix:to_list(M)).
+		  ], matrix:to_list(M)).
 
 % valid coordinate integer symmetric
 valid_crd_int_symm_test() ->
@@ -289,24 +291,34 @@ valid_crd_int_symm_test() ->
 		  [0,3,0,4],
 		  [2,0,5,0],
 		  [0,4,0,6]
-		  ],  matrix:to_list(M)).
+		  ], matrix:to_list(M)).
 
 % valid coordinate real symmetric
 valid_crd_real_symm_test() ->
     M = mtxmkt:mm_readfile(?File_valid_crd_real_symm),
     ?assertMatch([
-		  [1.1,0.0,4.4,0.0],
+		  [1.1,0.0,4.4,2.2],
 		  [0.0,3.3,0.0,0.0],
 		  [4.4,0.0,5.5,0.0],
-		  [0.0,0.0,0.0,6.6]
-		 ],  matrix:to_list(M)).
+		  [2.2,0.0,0.0,6.6]
+		 ], matrix:to_list(M)).
 
 % valid coordinate complex symmetric
 valid_crd_complex_symm_test() ->
     M = mtxmkt:mm_readfile(?File_valid_crd_complex_symm),
     ?assertMatch([
-		  [{1.1,1.2},{0.0,0.0},{4.4,4.5},{0.0,0.0}],
+		  [{1.1,1.2},{0.0,0.0},{4.4,4.5},{2.2,2.3}],
 		  [{0.0,0.0},{3.3,3.4},{0.0,0.0},{0.0,0.0}],
 		  [{4.4,4.5},{0.0,0.0},{5.5,5.6},{0.0,0.0}],
-		  [{0.0,0.0},{0.0,0.0},{0.0,0.0},{6.6,6.7}]
-		  ],  matrix:to_list(M)).
+		  [{2.2,2.3},{0.0,0.0},{0.0,0.0},{6.6,6.7}]
+		  ], matrix:to_list(M)).
+
+% valid coordinate complex hermitian
+valid_crd_complex_herm_test() ->
+    M = mtxmkt:mm_readfile(?File_valid_crd_complex_herm),
+    ?assertMatch([
+		  [{1.1,1.2},{0.0,0.0},{4.4,-4.5},{2.2, -2.3}],
+		  [{0.0,0.0},{3.3,3.4},{0.0, 0.0},{0.0,  0.0}],
+		  [{4.4,4.5},{0.0,0.0},{5.5, 5.6},{0.0,  0.0}],
+		  [{2.2,2.3},{0.0,0.0},{0.0, 0.0},{6.6,  6.7}]
+		  ], matrix:to_list(M)).

@@ -291,6 +291,17 @@ mm_read_matrix_data(IOdev, {coordinate, complex, symmetric}) ->
 	    {error, mm_invalid_size, "Symmetric matrices must be square."}
     end;
 
+mm_read_matrix_data(IOdev, {coordinate, complex, hermitian}) ->
+    case mm_read_mtx_crd_size(IOdev) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	{Nrows, Ncols, Nelems} when Nrows == Ncols ->
+	    M = matrix:new(Nrows, Ncols, {0.0, 0.0}),
+	    read_data_crd(IOdev, "~d ~d ~f ~f", Nelems, M, hermitian);
+	_ ->
+	    {error, mm_invalid_size, "Hermitian matrices must be square."}
+    end;
+
 mm_read_matrix_data(_IOdev, _Banner) ->
     {error, mm_notsupported, "Unsupported matrix type!"}.
 
@@ -503,20 +514,48 @@ read_data_crd(IOdev, Fmt, Nelems, M, Symm) ->
 		outofbounds ->
 		    {error, mm_invalid_coord, "Invalid matrix coordinates"};
 		M2 ->
-		    M3 = case Symm of
-			     general ->
-				 M2;
-			     symmetric ->
-				 matrix:set(Col, Row, Value, M2);
-			     'skew-symmetric' ->
-				 matrix:set(Col, Row, -Value, M2);
-			     hermitian ->
-				 matrix:set(Col, Row, conjugate(Value), M2)
-			 end,
-		    read_data_crd(IOdev, Fmt, Nelems-1, M3, Symm)
+		    case set_mat_symmetry(Row, Col, Value, M2, Symm) of
+			Error = {error, _Reason, _Msg} ->
+			    Error;
+			M3 ->
+			    read_data_crd(IOdev, Fmt, Nelems-1, M3, Symm)
+		    end
 	    end
     end.
 
+%%--------------------------------------------------------------------
+%% @doc set the symmtric value of a matrix, if appropriate.
+%%
+%% No values are set for diagonal values, or `general' matrices.
+%%
+%% For symmetric matrices, the matrix market file should only contain
+%% elements below the main diagonal.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec set_mat_symmetry(integer(), integer(), term(), matrix:matrix(), mtxsymm()) -> matrix:matrix() | mtxerror().
+set_mat_symmetry(_Row, _Col, _Value, M, general) ->
+    M;
+set_mat_symmetry(Row, Col, _Value, M, _Symm) when Row == Col ->
+    M;
+set_mat_symmetry(Row, Col, Value, M, Symm) when Row > Col ->
+    case Symm of
+	symmetric ->
+	    matrix:set(Col, Row, Value, M);
+	hermitian ->
+	    matrix:set(Col, Row, conjugate(Value), M)
+    end;
+set_mat_symmetry(_Row, _Col, _Value, _M, _Symm) ->
+    {error, mm_invalid_symm, "Encountered value above diagonal"}.
+
+%%--------------------------------------------------------------------
+%% @doc Return the conjugate of a complex number.
+%%
+%% The complex number is represented as a tuple of two floats.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec conjugate(complex()) -> complex().
 conjugate({Real, Imag}) ->
     {Real, -Imag}.
 
