@@ -99,3 +99,43 @@ from_list_short_test() ->
     M0 = matrix:new(2, 3, 42),
     M1 = matrix:from_list([[1, 2]], M0),
     ?assertMatch([[1, 2, 42], [42, 42, 42]], matrix:to_list(M1)).
+
+% out of bounds checks - set, bad row
+set_outofbounds_row_test() ->
+    M = matrix:new(2, 3, 42),
+    ?assertMatch(outofbounds, matrix:set(4, 4, 24, M)).
+
+% out of bounds checks - set, bad col
+set_outofbounds_col_test() ->
+    M = matrix:new(2, 3, 42),
+    ?assertMatch(outofbounds, matrix:set(2, 4, 24, M)).
+
+% out of bounds checks - get, bad row
+get_outofbounds_row_test() ->
+    M = matrix:new(2, 3, 42),
+    ?assertMatch(outofbounds, matrix:get(4, 4, M)).
+
+% out of bounds checks - get, bad col
+get_outofbounds_col_test() ->
+    M = matrix:new(2, 3, 42),
+    ?assertMatch(outofbounds, matrix:get(2, 4, M)).
+
+% out of bounds checks - set row, bad row
+set_row_outofbounds_row_test() ->
+    M = matrix:new(2, 3, 42),
+    ?assertMatch(outofbounds, matrix:set_row_list(4, lists:seq(1,5), M)).
+
+% out of bounds checks - set col, bad col
+set_col_outofbounds_col_test() ->
+    M = matrix:new(2, 3, 42),
+    ?assertMatch(outofbounds, matrix:set_col_list(4,lists:seq(1,5), M)).
+
+% out of bounds checks - get row bad row
+get_row_outofbounds_row_test() ->
+    M = matrix:new(2, 3, 42),
+    ?assertMatch(outofbounds, matrix:get_row_list(4, M)).
+
+% out of bounds checks - get col, bad col
+get_col_outofbounds_col_test() ->
+    M = matrix:new(2, 3, 42),
+    ?assertMatch(outofbounds, matrix:get_col_list(4, M)).
