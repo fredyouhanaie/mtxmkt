@@ -70,6 +70,12 @@ emptyfile_banner_test() ->
     ?assertMatch({error, eof, _Msg}, mtxmkt:mm_read_banner(IOdev)),
     file:close(IOdev).
 
+% bad file banner test
+badiodev_banner_test() ->
+    IOdev = mtxmkt:mm_openread(?File_nofile),
+    ?assertMatch({error, enoent, _Msg}, IOdev),
+    ?assertMatch({error, badarg, _Msg}, mtxmkt:mm_read_banner(IOdev)).
+
 % Not a matrix market file
 nonmmfile_test() ->
     IOdev = mtxmkt:mm_openread(?File_non_mm),
@@ -189,6 +195,14 @@ valid_size_array_test() ->
     ?assertMatch({array, real, general}, mtxmkt:mm_read_banner(IOdev)),
     ?assertMatch({5, 4}, mtxmkt:mm_read_mtx_array_size(IOdev)),
     file:close(IOdev).
+
+% readfile - bad file
+readfile_bad_file_test() ->
+    ?assertMatch({error, enoent, _Msg}, mtxmkt:mm_readfile(?File_nofile)).
+
+% readfile - bad banner
+readfile_bad_banner_test() ->
+    ?assertMatch({error, eof, _Msg}, mtxmkt:mm_readfile(?File_nulldev)).
 
 % valid coordinate pattern general
 valid_crd_patt_gen_test() ->
