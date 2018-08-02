@@ -466,9 +466,13 @@ read_data_col(IOdev, Fmt, Nelems, Col_list) ->
 read_data_array(_IOdev, _Fmt, _Nrows, 0, _Col_num, M) ->
     M;
 read_data_array(IOdev, Fmt, Nrows, Ncols, Col_num, M) ->
-    Col_list = read_data_col(IOdev, Fmt, Nrows, []),
-    M2 = matrix:set_col_list(Col_num, Col_list, M),
-    read_data_array(IOdev, Fmt, Nrows, Ncols-1, Col_num+1, M2).
+    case read_data_col(IOdev, Fmt, Nrows, []) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	Col_list ->
+	    M2 = matrix:set_col_list(Col_num, Col_list, M),
+	    read_data_array(IOdev, Fmt, Nrows, Ncols-1, Col_num+1, M2)
+    end.
 
 %%--------------------------------------------------------------------
 %% @doc Read the `symmetric' `array' `integer'/`real'/`complex' data

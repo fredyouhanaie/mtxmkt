@@ -39,6 +39,7 @@
 -define(File_valid_array_complex_gen, "test/data/testfile-valid-array-complex-gen.mtx").
 
 -define(File_valid_array_int_symm, "test/data/testfile-valid-array-int-symm.mtx").
+-define(File_valid_array_int_skewsymm, "test/data/testfile-valid-array-int-skewsymm.mtx").
 -define(File_valid_array_real_symm, "test/data/testfile-valid-array-real-symm.mtx").
 -define(File_valid_array_complex_symm, "test/data/testfile-valid-array-complex-symm.mtx").
 
@@ -48,6 +49,10 @@
 -define(File_valid_crd_complex_symm, "test/data/testfile-valid-crd-complex-symm.mtx").
 
 -define(File_valid_crd_complex_herm, "test/data/testfile-valid-crd-complex-herm.mtx").
+
+-define(File_invalid_coord, "test/data/testfile-invalid-coord.mtx").
+-define(File_invalid_symm_coord, "test/data/testfile-invalid-symm-coord.mtx").
+-define(File_invalid_array_int_gen, "test/data/testfile-invalid-array-int-gen.mtx").
 
 %%--------------------------------------------------------------------
 %% The tests
@@ -369,3 +374,25 @@ valid_crd_complex_herm_test() ->
 		   [{4.4,4.5},{0.0,0.0},{5.5, 5.6},{0.0,  0.0}],
 		   [{2.2,2.3},{0.0,0.0},{0.0, 0.0},{6.6,  6.7}]
 		  ]}, {Mtx_code, matrix:to_list(M)}).
+
+% bad file data test
+badiodev_matrix_test() ->
+    IOdev = mtxmkt:mm_openread(?File_nofile),
+    ?assertMatch({error, enoent, _Msg}, IOdev),
+    ?assertMatch({error, badarg, _Msg}, mtxmkt:mm_read_matrix_data(IOdev, {coordinate, complex, general})).
+
+% invalid, out of range, coordinates
+invalid_matrix_coord_test() ->
+    ?assertMatch({error, mm_invalid_coord, _Msg}, mtxmkt:mm_readfile(?File_invalid_coord)).
+
+% symmetric matrix with coordinate(s) above the diagonal
+invalid_symm_coord_test() ->
+    ?assertMatch({error, mm_invalid_symm, _Msg}, mtxmkt:mm_readfile(?File_invalid_symm_coord)).
+
+% presently unsupported array integer skew-symmetric
+valid_array_int_skewsymm_test() ->
+    ?assertMatch({error, mm_notsupported, _Msg}, mtxmkt:mm_readfile(?File_valid_array_int_skewsymm)).
+
+% bad data entry for array column
+invalid_array_data_entry_test() ->
+    ?assertMatch({error, mm_invalid_entry, _Msg}, mtxmkt:mm_readfile(?File_invalid_array_int_gen)).
