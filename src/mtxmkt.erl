@@ -145,165 +145,19 @@ mm_readfile(Filename) ->
     end.
 
 %%--------------------------------------------------------------------
-%% @doc Read an return the matrix data for a given
+%% @doc Read and return the matrix data for a given
 %% format/type/symmetry
 %%
 %% @end
 %%--------------------------------------------------------------------
 -spec mm_read_matrix_data(iodev(), mtxcode()) -> matrix:matrix() | mtxerror().
-mm_read_matrix_data(IOdev, {coordinate, pattern, general}) ->
-    case mm_read_mtx_crd_size(IOdev) of
+mm_read_matrix_data(IOdev, {Mtx_fmt, Data_type, Symm_type}) ->
+    case read_matrix_size(IOdev, Mtx_fmt) of
 	Error = {error, _Reason, _Msg} ->
 	    Error;
-	{Nrows, Ncols, Nelems} ->
-	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_crd(IOdev, "~d ~d", Nelems, M, general)
-    end;
-
-mm_read_matrix_data(IOdev, {coordinate, integer, general}) ->
-    case mm_read_mtx_crd_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols, Nelems} ->
-	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_crd(IOdev, "~d ~d ~d", Nelems, M, general)
-    end;
-
-mm_read_matrix_data(IOdev, {coordinate, real, general}) ->
-    case mm_read_mtx_crd_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols, Nelems} ->
-	    M = matrix:new(Nrows, Ncols, 0.0),
-	    read_data_crd(IOdev, "~d ~d ~f", Nelems, M, general)
-    end;
-
-mm_read_matrix_data(IOdev, {coordinate, complex, general}) ->
-    case mm_read_mtx_crd_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols, Nelems} ->
-	    M = matrix:new(Nrows, Ncols, {0.0, 0.0}),
-	    read_data_crd(IOdev, "~d ~d ~f ~f", Nelems, M, general)
-    end;
-
-mm_read_matrix_data(IOdev, {array, integer, general}) ->
-    case mm_read_mtx_array_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols} ->
-	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_array(IOdev, "~d", Nrows, Ncols, 1, M)
-    end;
-
-mm_read_matrix_data(IOdev, {array, real, general}) ->
-    case mm_read_mtx_array_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols} ->
-	    M = matrix:new(Nrows, Ncols, 0.0),
-	    read_data_array(IOdev, "~f", Nrows, Ncols, 1, M)
-    end;
-
-mm_read_matrix_data(IOdev, {array, complex, general}) ->
-    case mm_read_mtx_array_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols} ->
-	    M = matrix:new(Nrows, Ncols, {0.0, 0.0}),
-	    read_data_array(IOdev, "~f ~f", Nrows, Ncols, 1, M)
-    end;
-
-mm_read_matrix_data(IOdev, {array, integer, symmetric}) ->
-    case mm_read_mtx_array_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols} when Nrows == Ncols ->
-	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_array_symm(IOdev, "~d", Nrows, Ncols, 1, M);
-	_ ->
-	    {error, mm_invalid_size, "Symmetric matrices must be square."}
-    end;
-
-mm_read_matrix_data(IOdev, {array, real, symmetric}) ->
-    case mm_read_mtx_array_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols} when Nrows == Ncols ->
-	    M = matrix:new(Nrows, Ncols, 0.0),
-	    read_data_array_symm(IOdev, "~f", Nrows, Ncols, 1, M);
-	_ ->
-	    {error, mm_invalid_size, "Symmetric matrices must be square."}
-    end;
-
-mm_read_matrix_data(IOdev, {array, complex, symmetric}) ->
-    case mm_read_mtx_array_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols} when Nrows == Ncols ->
-	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_array_symm(IOdev, "~f ~f", Nrows, Ncols, 1, M);
-	_ ->
-	    {error, mm_invalid_size, "Symmetric matrices must be square."}
-    end;
-
-mm_read_matrix_data(IOdev, {coordinate, pattern, symmetric}) ->
-    case mm_read_mtx_crd_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols, Nelems} when Nrows == Ncols ->
-	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_crd(IOdev, "~d ~d", Nelems, M, symmetric);
-	_ ->
-	    {error, mm_invalid_size, "Symmetric matrices must be square."}
-    end;
-
-mm_read_matrix_data(IOdev, {coordinate, integer, symmetric}) ->
-    case mm_read_mtx_crd_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols, Nelems} when Nrows == Ncols ->
-	    M = matrix:new(Nrows, Ncols, 0),
-	    read_data_crd(IOdev, "~d ~d ~d", Nelems, M, symmetric);
-	_ ->
-	    {error, mm_invalid_size, "Symmetric matrices must be square."}
-    end;
-
-mm_read_matrix_data(IOdev, {coordinate, real, symmetric}) ->
-    case mm_read_mtx_crd_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols, Nelems} when Nrows == Ncols ->
-	    M = matrix:new(Nrows, Ncols, 0.0),
-	    read_data_crd(IOdev, "~d ~d ~f", Nelems, M, symmetric);
-	_ ->
-	    {error, mm_invalid_size, "Symmetric matrices must be square."}
-    end;
-
-mm_read_matrix_data(IOdev, {coordinate, complex, symmetric}) ->
-    case mm_read_mtx_crd_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols, Nelems} when Nrows == Ncols ->
-	    M = matrix:new(Nrows, Ncols, {0.0, 0.0}),
-	    read_data_crd(IOdev, "~d ~d ~f ~f", Nelems, M, symmetric);
-	_ ->
-	    {error, mm_invalid_size, "Symmetric matrices must be square."}
-    end;
-
-mm_read_matrix_data(IOdev, {coordinate, complex, hermitian}) ->
-    case mm_read_mtx_crd_size(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols, Nelems} when Nrows == Ncols ->
-	    M = matrix:new(Nrows, Ncols, {0.0, 0.0}),
-	    read_data_crd(IOdev, "~d ~d ~f ~f", Nelems, M, hermitian);
-	_ ->
-	    {error, mm_invalid_size, "Hermitian matrices must be square."}
-    end;
-
-mm_read_matrix_data(_IOdev, _Banner) ->
-    {error, mm_notsupported, "Unsupported matrix type!"}.
+	Size ->
+	    process_matrix(IOdev, {Mtx_fmt, Data_type, Symm_type}, Size)
+    end.
 
 %%====================================================================
 %% Internal functions
@@ -646,3 +500,67 @@ read_data_array_symm(IOdev, Fmt, Nrows, Ncols, Col_num, M) ->
     M2 = matrix:set_col_list(Col_num, List, M),
     M3 = matrix:set_row_list(Col_num, List, M2),
     read_data_array_symm(IOdev, Fmt, Nrows-1, Ncols-1, Col_num+1, M3).
+
+%%--------------------------------------------------------------------
+%% @doc Read the matrix size for a given matrix format.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec read_matrix_size(iodev(), mtxformat()) -> {integer(), integer()} | {integer(), integer(), integer()} | mtxerror().
+read_matrix_size(IOdev, coordinate) ->
+    mm_read_mtx_crd_size(IOdev);
+read_matrix_size(IOdev, array) ->
+    mm_read_mtx_array_size(IOdev).
+
+%%--------------------------------------------------------------------
+%% @doc read the matrix data.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec process_matrix(iodev(), mtxcode(), {integer(), integer(), integer()}) ->  matrix:mtrix()| mtxerror().
+process_matrix(IOdev, {coordinate, Data_type, Symm_type}, {Nrows, Ncols, Nelems}) ->
+    {Fmt, Mtx_default} = datatype2fmt(coordinate, Data_type),
+    M = matrix:new(Nrows, Ncols, Mtx_default),
+    read_data_crd(IOdev, Fmt, Nelems, M, Symm_type);
+
+% below implementation is due to be revised, and will be simplified in
+% due course.
+process_matrix(IOdev, {array, Data_type, Symm_type}, {Nrows, Ncols}) ->
+    {Fmt, Mtx_default} = datatype2fmt(array, Data_type),
+    M = matrix:new(Nrows, Ncols, Mtx_default),
+    case Symm_type of
+	general ->
+	    read_data_array(IOdev, Fmt, Nrows, Ncols, 1, M);
+	symmetric ->
+	    read_data_array_symm(IOdev, Fmt, Nrows, Ncols, 1, M);
+	_ ->
+	    {error, mm_notsupported, "Unsupported matrix type!"}
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc Given a matrix data type, return the fread format and the zero
+%% term for sparse matrices.
+%%
+%% Array formats have one value per line, while in the coordinate
+%% format the pair of matrix coordinates precedes the value. In
+%% coordinate/pattern matrices we only have the coordinates.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec datatype2fmt(mtxformat(), mtxtype()) -> {string(), integer()|float()|complex()}.
+datatype2fmt(coordinate, pattern) ->
+    {"~d ~d", 0};
+
+datatype2fmt(coordinate, Type) ->
+    {Format, Default} = datatype2fmt(array, Type),
+    {"~d ~d " ++ Format, Default};
+
+datatype2fmt(array, Type) ->
+    case Type of
+	integer ->
+	    {"~d", 0};
+	real ->
+	    {"~f", 0.0};
+	complex ->
+	    {"~f ~f", {0.0, 0.0}}
+    end.
