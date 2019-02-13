@@ -32,28 +32,28 @@ that combination:
 
 | Object | Format     | Field   | Symmetry       | Status  |
 | :----- | :------    | :-----  | :--------      | :------ |
-| matrix | array      | integer | general        |         |
-| matrix | coordinate | integer | general        |         |
-| matrix | array      | real    | general        |         |
-| matrix | coordinate | real    | general        |         |
-| matrix | array      | complex | general        |         |
-| matrix | coordinate | complex | general        |         |
-| matrix | array      | integer | symmetric      |         |
-| matrix | coordinate | integer | symmetric      |         |
-| matrix | array      | real    | symmetric      |         |
-| matrix | coordinate | real    | symmetric      |         |
-| matrix | array      | complex | symmetric      |         |
-| matrix | coordinate | complex | symmetric      |         |
+| matrix | array      | integer | general        | read    |
+| matrix | coordinate | integer | general        | read    |
+| matrix | array      | real    | general        | read    |
+| matrix | coordinate | real    | general        | read    |
+| matrix | array      | complex | general        | read    |
+| matrix | coordinate | complex | general        | read    |
+| matrix | array      | integer | symmetric      | read    |
+| matrix | coordinate | integer | symmetric      | read    |
+| matrix | array      | real    | symmetric      | read    |
+| matrix | coordinate | real    | symmetric      | read    |
+| matrix | array      | complex | symmetric      | read    |
+| matrix | coordinate | complex | symmetric      | read    |
 | matrix | array      | integer | skew-symmetric |         |
-| matrix | coordinate | integer | skew-symmetric |         |
+| matrix | coordinate | integer | skew-symmetric | read    |
 | matrix | array      | real    | skew-symmetric |         |
-| matrix | coordinate | real    | skew-symmetric |         |
+| matrix | coordinate | real    | skew-symmetric | read    |
 | matrix | array      | complex | skew-symmetric |         |
-| matrix | coordinate | complex | skew-symmetric |         |
+| matrix | coordinate | complex | skew-symmetric | read    |
 | matrix | array      | complex | hermitian      |         |
-| matrix | coordinate | complex | hermitian      |         |
-| matrix | coordinate | pattern | general        |         |
-| matrix | coordinate | pattern | symmetric      |         |
+| matrix | coordinate | complex | hermitian      | read    |
+| matrix | coordinate | pattern | general        | read    |
+| matrix | coordinate | pattern | symmetric      | read    |
 
 
 
