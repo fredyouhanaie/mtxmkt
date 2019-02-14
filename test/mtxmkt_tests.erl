@@ -61,6 +61,8 @@
 -define(File_valid_array_real_skewsymm, "test/data/testfile-valid-array-real-skewsymm.mtx").
 -define(File_valid_array_complex_skewsymm, "test/data/testfile-valid-array-complex-skewsymm.mtx").
 
+-define(File_valid_array_complex_herm, "test/data/testfile-valid-array-complex-herm.mtx").
+
 
 %%--------------------------------------------------------------------
 %% The tests
@@ -464,5 +466,16 @@ valid_array_complex_skewsymm_test() ->
 		   [{ 11.1, 11.2}, {-12.2, -12.3}, {-13.3, -13.4}, {-14.4, -14.5}],
 		   [{ 12.2, 12.3}, { 15.5,  15.6}, {-16.6, -16.7}, {-17.7, -17.8}],
 		   [{ 13.3, 13.4}, { 16.6,  16.7}, { 18.8,  18.9}, {-19.9, -19.0}],
+		   [{ 14.4, 14.5}, { 17.7,  17.8}, { 19.9,  19.0}, { 20.0,  20.1}]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
+
+% valid array complex hermitian
+valid_array_complex_herm_test() ->
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_array_complex_herm),
+    ?assertMatch({{array, complex, hermitian},
+		  [
+		   [{ 11.1, 11.2}, { 12.2, -12.3}, { 13.3, -13.4}, { 14.4, -14.5}],
+		   [{ 12.2, 12.3}, { 15.5,  15.6}, { 16.6, -16.7}, { 17.7, -17.8}],
+		   [{ 13.3, 13.4}, { 16.6,  16.7}, { 18.8,  18.9}, { 19.9, -19.0}],
 		   [{ 14.4, 14.5}, { 17.7,  17.8}, { 19.9,  19.0}, { 20.0,  20.1}]
 		  ]}, {Mtx_code, matrix:to_list(M)}).

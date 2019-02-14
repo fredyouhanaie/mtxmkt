@@ -50,7 +50,7 @@ that combination:
 | matrix | coordinate | real    | skew-symmetric | read    |
 | matrix | array      | complex | skew-symmetric | read    |
 | matrix | coordinate | complex | skew-symmetric | read    |
-| matrix | array      | complex | hermitian      |         |
+| matrix | array      | complex | hermitian      | read    |
 | matrix | coordinate | complex | hermitian      | read    |
 | matrix | coordinate | pattern | general        | read    |
 | matrix | coordinate | pattern | symmetric      | read    |
