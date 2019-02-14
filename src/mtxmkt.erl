@@ -458,54 +458,56 @@ read_data_col(IOdev, Fmt, Nelems, Col_list) ->
     end.
 
 %%--------------------------------------------------------------------
-%% @doc Read the `array' `integer'/`real'/`complex' data from the open file.
+%% @doc Read the `array' `integer'/`real'/`complex' data from the open
+%% file.
 %%
-%% The data is returned as a matrix.
+%% We read one column at a time, starting from column 1.
+%%
+%% In case of `general' arrays we expect the same number of elemnts in
+%% each columns.
+%%
+%% For the symmetric formats, i.e. `symmetric' / `skew-symmetric' /
+%% `hermitian', the number of elements in each column decreases by 1
+%% each time we move to the next column.
+%%
+%% When we assign a list of values to a column of a symmetric array,
+%% we also assign suitable values, depeneding on the symmetry type, to
+%% the corresponding row.
+%%
+%% Since the `matrix' module only allows setting of a complete
+%% row/column from a list, we create a column/row from existing and
+%% new values before storing in the `matrix'.
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec read_data_array(iodev(), string(), integer(), integer(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
-read_data_array(_IOdev, _Fmt, _Nrows, 0, _Col_num, M) ->
+
+-spec read_data_array(iodev(), string(), atom(), integer(), integer(), integer(), matrix:matrix()) -> matrix:matrix() | mtxerror().
+read_data_array(_IOdev, _Fmt, _Symm, _Nrows, 0, _Col_num, M) ->
     M;
-read_data_array(IOdev, Fmt, Nrows, Ncols, Col_num, M) ->
+
+read_data_array(IOdev, Fmt, general, Nrows, Ncols, Col_num, M) ->
     case read_data_col(IOdev, Fmt, Nrows, []) of
 	Error = {error, _Reason, _Msg} ->
 	    Error;
 	Col_list ->
 	    M2 = matrix:set_col_list(Col_num, Col_list, M),
-	    read_data_array(IOdev, Fmt, Nrows, Ncols-1, Col_num+1, M2)
-    end.
+	    read_data_array(IOdev, Fmt, general, Nrows, Ncols-1, Col_num+1, M2)
+    end;
 
-%%--------------------------------------------------------------------
-%% @doc Read the `symmetric' `array' `integer'/`real'/`complex' data
-%% from the open file.
-%%
-%% We read one column at a time, starting from column 1. The number
-%% elements in each column decrease by 1 each time we move to the next
-%% column.
-%%
-%% when we assign a list of values to a column, we also assign the
-%% same list to the corresponding row. The list read from the file
-%% only correspond to the elements below or to the right of the
-%% diagonal.
-%%
-%% Since the `matrix' module only allows setting of a complete
-%% row/column from a list, we need to read current contents of the
-%% row/column up to the diagonal and
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec read_data_array_symm(iodev(), string(), integer(), integer(), integer(), matrix:matrix())
-			  -> matrix:matrix() | mtxerror().
-read_data_array_symm(_IOdev, _Fmt, 0, 0, _Col_num, M) ->
-    M;
-read_data_array_symm(IOdev, Fmt, Nrows, Ncols, Col_num, M) ->
-    Col_list = read_data_col(IOdev, Fmt, Nrows, []),
-    Col_pref = lists:sublist(matrix:get_col_list(Col_num, M), 1, Col_num-1),
-    List = Col_pref++Col_list,
-    M2 = matrix:set_col_list(Col_num, List, M),
-    M3 = matrix:set_row_list(Col_num, List, M2),
-    read_data_array_symm(IOdev, Fmt, Nrows-1, Ncols-1, Col_num+1, M3).
+read_data_array(IOdev, Fmt, symmetric, Nrows, Ncols, Col_num, M) ->
+    case read_data_col(IOdev, Fmt, Nrows, []) of
+	Error = {error, _Reason, _Msg} ->
+	    Error;
+	Col_list ->
+	    Col_prefix = lists:sublist(matrix:get_col_list(Col_num, M), 1, Col_num-1),
+	    Col_whole  = Col_prefix ++ Col_list,
+	    M2 = matrix:set_col_list(Col_num, Col_whole, M),
+	    M3 = matrix:set_row_list(Col_num, Col_whole, M2),
+	    read_data_array(IOdev, Fmt, symmetric, Nrows-1, Ncols-1, Col_num+1, M3)
+    end;
+
+read_data_array(_IOdev, _Fmt, _Symm, _Nrows, _Ncols, _Col_num, _M) ->
+    {error, mm_notsupported, "Unsupported matrix symmetry type"}.
 
 %%--------------------------------------------------------------------
 %% @doc Read the matrix size for a given matrix format.
@@ -529,19 +531,11 @@ process_matrix(IOdev, {coordinate, Data_type, Symm_type}, {Nrows, Ncols, Nelems}
     M = matrix:new(Nrows, Ncols, Mtx_default),
     read_data_crd(IOdev, Fmt, Nelems, M, Symm_type);
 
-% below implementation is due to be revised, and will be simplified in
-% due course.
 process_matrix(IOdev, {array, Data_type, Symm_type}, {Nrows, Ncols}) ->
     {Fmt, Mtx_default} = datatype2fmt(array, Data_type),
     M = matrix:new(Nrows, Ncols, Mtx_default),
-    case Symm_type of
-	general ->
-	    read_data_array(IOdev, Fmt, Nrows, Ncols, 1, M);
-	symmetric ->
-	    read_data_array_symm(IOdev, Fmt, Nrows, Ncols, 1, M);
-	_ ->
-	    {error, mm_notsupported, "Unsupported matrix type!"}
-    end.
+    read_data_array(IOdev, Fmt, Symm_type, Nrows, Ncols, 1, M).
+
 
 %%--------------------------------------------------------------------
 %% @doc Given a matrix data type, return the fread format and the zero
