@@ -71,7 +71,7 @@ mm_openread(Filename) ->
 %%
 %% @end
 %% --------------------------------------------------------------------
--spec mm_read_banner(iodev()) -> {atom(), atom(), atom(), atom()} | mtxerror().
+-spec mm_read_banner(iodev()) -> mtxcode() | mtxerror().
 mm_read_banner(IOdev) ->
     case file:read_line(IOdev) of
 	{ok, Banner} ->
@@ -169,7 +169,7 @@ mm_read_matrix_data(IOdev, {Mtx_fmt, Data_type, Symm_type}) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec process_banner(string()) -> {atom(), atom(), atom(), atom()} | {error, atom(), string()}.
+-spec process_banner(string()) -> mtxcode() | mtxerror().
 process_banner(Banner) ->
     Rest = string:prefix(Banner, ?MatrixMarketBanner),
     case Rest of
@@ -190,7 +190,7 @@ process_banner(Banner) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec process_banner_rest(list()) -> mtxcode() | {error, tuple(), string()}.
+-spec process_banner_rest(list()) -> mtxcode() | mtxerror().
 process_banner_rest([Obj, Fmt, Type, Symm]) ->
     case Obj of
 	matrix ->
@@ -279,8 +279,10 @@ read_next_line(IOdev) ->
 	    end;
 	eof ->
 	    {error, eof, "Error reading from file"};
-	{error, Reason} ->
-	    {error, Reason, "Error reading from file"}
+	{error, Reason} when is_atom(Reason) ->
+	    {error, Reason, "Error reading from file"};
+	{error, {no_translation, unicode, latin1}} ->
+	    {error, mm_encoding, "Error reading from file"}
     end.
 
 %%--------------------------------------------------------------------
