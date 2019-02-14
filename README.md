@@ -44,11 +44,11 @@ that combination:
 | matrix | coordinate | real    | symmetric      | read    |
 | matrix | array      | complex | symmetric      | read    |
 | matrix | coordinate | complex | symmetric      | read    |
-| matrix | array      | integer | skew-symmetric |         |
+| matrix | array      | integer | skew-symmetric | read    |
 | matrix | coordinate | integer | skew-symmetric | read    |
-| matrix | array      | real    | skew-symmetric |         |
+| matrix | array      | real    | skew-symmetric | read    |
 | matrix | coordinate | real    | skew-symmetric | read    |
-| matrix | array      | complex | skew-symmetric |         |
+| matrix | array      | complex | skew-symmetric | read    |
 | matrix | coordinate | complex | skew-symmetric | read    |
 | matrix | array      | complex | hermitian      |         |
 | matrix | coordinate | complex | hermitian      | read    |

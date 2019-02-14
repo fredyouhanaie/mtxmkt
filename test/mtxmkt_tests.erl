@@ -39,7 +39,6 @@
 -define(File_valid_array_complex_gen, "test/data/testfile-valid-array-complex-gen.mtx").
 
 -define(File_valid_array_int_symm, "test/data/testfile-valid-array-int-symm.mtx").
--define(File_valid_array_int_skewsymm, "test/data/testfile-valid-array-int-skewsymm.mtx").
 -define(File_valid_array_real_symm, "test/data/testfile-valid-array-real-symm.mtx").
 -define(File_valid_array_complex_symm, "test/data/testfile-valid-array-complex-symm.mtx").
 
@@ -57,6 +56,11 @@
 -define(File_invalid_coord, "test/data/testfile-invalid-coord.mtx").
 -define(File_invalid_symm_coord, "test/data/testfile-invalid-symm-coord.mtx").
 -define(File_invalid_array_int_gen, "test/data/testfile-invalid-array-int-gen.mtx").
+
+-define(File_valid_array_int_skewsymm, "test/data/testfile-valid-array-int-skewsymm.mtx").
+-define(File_valid_array_real_skewsymm, "test/data/testfile-valid-array-real-skewsymm.mtx").
+-define(File_valid_array_complex_skewsymm, "test/data/testfile-valid-array-complex-skewsymm.mtx").
+
 
 %%--------------------------------------------------------------------
 %% The tests
@@ -426,10 +430,39 @@ invalid_matrix_coord_test() ->
 invalid_symm_coord_test() ->
     ?assertMatch({error, mm_invalid_symm, _Msg}, mtxmkt:mm_readfile(?File_invalid_symm_coord)).
 
-% presently unsupported array integer skew-symmetric
-valid_array_int_skewsymm_test() ->
-    ?assertMatch({error, mm_notsupported, _Msg}, mtxmkt:mm_readfile(?File_valid_array_int_skewsymm)).
-
 % bad data entry for array column
 invalid_array_data_entry_test() ->
     ?assertMatch({error, mm_invalid_entry, _Msg}, mtxmkt:mm_readfile(?File_invalid_array_int_gen)).
+
+% valid array int skew-symmetric
+valid_array_int_skewsymm_test() ->
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_array_int_skewsymm),
+    ?assertMatch({{array, integer, 'skew-symmetric'},
+		  [
+		   [11, -12, -13, -14],
+		   [12,  15, -16, -17],
+		   [13,  16,  18, -19],
+		   [14,  17,  19,  20]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
+
+% valid array real skew-symmetric
+valid_array_real_skewsymm_test() ->
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_array_real_skewsymm),
+    ?assertMatch({{array, real, 'skew-symmetric'},
+		  [
+		   [1.1, -1.2, -1.3, -1.4],
+		   [1.2,  1.5, -1.6, -1.7],
+		   [1.3,  1.6,  1.8, -1.9],
+		   [1.4,  1.7,  1.9,  2.0]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
+
+% valid array complex skew-symmetric
+valid_array_complex_skewsymm_test() ->
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_array_complex_skewsymm),
+    ?assertMatch({{array, complex, 'skew-symmetric'},
+		  [
+		   [{ 11.1, 11.2}, {-12.2, -12.3}, {-13.3, -13.4}, {-14.4, -14.5}],
+		   [{ 12.2, 12.3}, { 15.5,  15.6}, {-16.6, -16.7}, {-17.7, -17.8}],
+		   [{ 13.3, 13.4}, { 16.6,  16.7}, { 18.8,  18.9}, {-19.9, -19.0}],
+		   [{ 14.4, 14.5}, { 17.7,  17.8}, { 19.9,  19.0}, { 20.0,  20.1}]
+		  ]}, {Mtx_code, matrix:to_list(M)}).

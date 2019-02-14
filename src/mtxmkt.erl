@@ -501,7 +501,7 @@ read_data_array(IOdev, Fmt, general, Nrows, Ncols, Col_num, M) ->
 	    read_data_array(IOdev, Fmt, general, Nrows, Ncols-1, Col_num+1, M2)
     end;
 
-read_data_array(IOdev, Fmt, symmetric, Nrows, Ncols, Col_num, M) ->
+read_data_array(IOdev, Fmt, Symm, Nrows, Ncols, Col_num, M) ->
     case read_data_col(IOdev, Fmt, Nrows, []) of
 	Error = {error, _Reason, _Msg} ->
 	    Error;
@@ -509,12 +509,22 @@ read_data_array(IOdev, Fmt, symmetric, Nrows, Ncols, Col_num, M) ->
 	    Col_prefix = lists:sublist(matrix:get_col_list(Col_num, M), 1, Col_num-1),
 	    Col_whole  = Col_prefix ++ Col_list,
 	    M2 = matrix:set_col_list(Col_num, Col_whole, M),
-	    M3 = matrix:set_row_list(Col_num, Col_whole, M2),
-	    read_data_array(IOdev, Fmt, symmetric, Nrows-1, Ncols-1, Col_num+1, M3)
-    end;
+	    Row_prefix = lists:sublist(matrix:get_row_list(Col_num, M2), 1, Col_num),
+	    Row_whole = Row_prefix ++ lists:map(fun (V) -> symm_value(V, Symm) end, tl(Col_list)),
+	    M3 = matrix:set_row_list(Col_num, Row_whole, M2),
+	    read_data_array(IOdev, Fmt, Symm, Nrows-1, Ncols-1, Col_num+1, M3)
+    end.
 
-read_data_array(_IOdev, _Fmt, _Symm, _Nrows, _Ncols, _Col_num, _M) ->
-    {error, mm_notsupported, "Unsupported matrix symmetry type"}.
+%%--------------------------------------------------------------------
+%% @doc compute the upper diagonal value based on the symmetry type.
+%%
+%% @end
+%% --------------------------------------------------------------------
+symm_value(Value, symmetric)			->    Value;
+symm_value(Value, hermitian)			->    conjugate(Value);
+symm_value({Real, Imag}, 'skew-symmetric')	->    {-Real, -Imag};
+symm_value(Value, 'skew-symmetric')		->    -Value.
+
 
 %%--------------------------------------------------------------------
 %% @doc Read the matrix size for a given matrix format.
