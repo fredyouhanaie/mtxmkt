@@ -392,17 +392,24 @@ read_data_crd(IOdev, Fmt, Nelems, M, Symm) ->
 -spec set_mat_symmetry(integer(), integer(), term(), matrix:matrix(), mtxsymm()) -> matrix:matrix() | mtxerror().
 set_mat_symmetry(_Row, _Col, _Value, M, general) ->
     M;
+
 set_mat_symmetry(Row, Col, _Value, M, _Symm) when Row == Col ->
     M;
-set_mat_symmetry(Row, Col, Value, M, Symm) when Row > Col ->
-    case Symm of
-	symmetric ->
-	    matrix:set(Col, Row, Value, M);
-	hermitian ->
-	    matrix:set(Col, Row, conjugate(Value), M)
-    end;
-set_mat_symmetry(_Row, _Col, _Value, _M, _Symm) ->
-    {error, mm_invalid_symm, "Encountered value above diagonal"}.
+
+set_mat_symmetry(Row, Col, _Value, _M, _Symm) when Row < Col ->
+    {error, mm_invalid_symm, "Encountered value above diagonal"};
+
+set_mat_symmetry(Row, Col, Value, M, symmetric) ->
+    matrix:set(Col, Row, Value, M);
+
+set_mat_symmetry(Row, Col, {Real, Imag}, M, 'skew-symmetric') ->
+    matrix:set(Col, Row, {-Real, -Imag}, M);
+
+set_mat_symmetry(Row, Col, Value, M, 'skew-symmetric') ->
+    matrix:set(Col, Row, -Value, M);
+
+set_mat_symmetry(Row, Col, Value, M, hermitian) ->
+    matrix:set(Col, Row, conjugate(Value), M).
 
 %%--------------------------------------------------------------------
 %% @doc Return the conjugate of a complex number.

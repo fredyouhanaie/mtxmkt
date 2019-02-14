@@ -48,6 +48,10 @@
 -define(File_valid_crd_real_symm, "test/data/testfile-valid-crd-real-symm.mtx").
 -define(File_valid_crd_complex_symm, "test/data/testfile-valid-crd-complex-symm.mtx").
 
+-define(File_valid_crd_int_skewsymm, "test/data/testfile-valid-crd-int-skewsymm.mtx").
+-define(File_valid_crd_real_skewsymm, "test/data/testfile-valid-crd-real-skewsymm.mtx").
+-define(File_valid_crd_complex_skewsymm, "test/data/testfile-valid-crd-complex-skewsymm.mtx").
+
 -define(File_valid_crd_complex_herm, "test/data/testfile-valid-crd-complex-herm.mtx").
 
 -define(File_invalid_coord, "test/data/testfile-invalid-coord.mtx").
@@ -373,6 +377,39 @@ valid_crd_complex_herm_test() ->
 		   [{0.0,0.0},{3.3,3.4},{0.0, 0.0},{0.0,  0.0}],
 		   [{4.4,4.5},{0.0,0.0},{5.5, 5.6},{0.0,  0.0}],
 		   [{2.2,2.3},{0.0,0.0},{0.0, 0.0},{6.6,  6.7}]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
+
+% valid coordinate integer skew-symmetric
+valid_crd_int_skewsymm_test() ->
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_int_skewsymm),
+    ?assertMatch({{coordinate, integer, 'skew-symmetric'},
+		  [
+		   [ 1, 0,-2, 0],
+		   [ 0, 3, 0,-4],
+		   [ 2, 0, 5, 0],
+		   [ 0, 4, 0, 6]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
+
+% valid coordinate real skew-symmetric
+valid_crd_real_skewsymm_test() ->
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_real_skewsymm),
+    ?assertMatch({{coordinate, real, 'skew-symmetric'},
+		  [
+		   [1.1, 0.0,-4.4,-2.2],
+		   [0.0, 3.3, 0.0, 0.0],
+		   [4.4, 0.0, 5.5, 0.0],
+		   [2.2, 0.0, 0.0, 6.6]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
+
+% valid coordinate complex skew-symmetric
+valid_crd_complex_skewsymm_test() ->
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_complex_skewsymm),
+    ?assertMatch({{coordinate, complex, 'skew-symmetric'},
+		  [
+		   [{ 1.1, 1.2},{ 0.0, 0.0},{-4.4,-4.5},{-2.2, -2.3}],
+		   [{ 0.0, 0.0},{ 3.3, 3.4},{ 0.0, 0.0},{ 0.0,  0.0}],
+		   [{ 4.4, 4.5},{ 0.0, 0.0},{ 5.5, 5.6},{ 0.0,  0.0}],
+		   [{ 2.2, 2.3},{ 0.0, 0.0},{ 0.0, 0.0},{ 6.6,  6.7}]
 		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % bad file data test
