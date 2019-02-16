@@ -7,16 +7,25 @@
 %%% The functions read and write the file contents into "matrix"
 %%% types. See the accompanying matrix module for details.
 %%%
+%%% To read an existing matrix market file, use the `mm_readfile/1' or
+%%% the `mm_readfile/2' functions, the latter is for reading gzip
+%%% compressed files. The returned matrix can be used in calculations
+%%% as needed. Alternatively, the matrix can be read using the
+%%% sequence of functions, `mm_openread', `mm_readbanner' and
+%%% `mm_read_matrix_data'.
+%%%
+%%% The matrix write functions are yet to be implemented.
+%%%
 %%% @end
 %%% Created : 5 Jul 2018 by Fred Youhanaie <fyrlang@anydata.co.uk>
 %%%-------------------------------------------------------------------
 -module(mtxmkt).
 
 %% API exports
--export([mm_openread/1, mm_read_banner/1]).
+-export([mm_openread/1, mm_openread/2, mm_read_banner/1]).
 -export([mm_read_mtx_crd_size/1, mm_read_mtx_array_size/1]).
 -export([mm_read_matrix_data/2]).
--export([mm_readfile/1]).
+-export([mm_readfile/1, mm_readfile/2]).
 
 
 %%====================================================================
@@ -49,11 +58,34 @@
 %%--------------------------------------------------------------------
 %% @doc Open a matrix file for reading.
 %%
+%% The input file is expected to be in uncompressed format.
+%%
 %% @end
 %%--------------------------------------------------------------------
 -spec mm_openread(string()) -> iodev()| mtxerror().
 mm_openread(Filename) ->
-    case file:open(Filename, [read]) of
+    mm_openread2(Filename, []).
+
+%%--------------------------------------------------------------------
+%% @doc Open a compressed matrix file for reading.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_openread(string(), compressed) -> iodev()| mtxerror().
+mm_openread(Filename, compressed) ->
+    mm_openread2(Filename, [compressed]).
+
+%%--------------------------------------------------------------------
+%% @doc Open a matrix file for reading.
+%%
+%% For gzip compressed files the `[compressed]' argument should be
+%% supplied.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_openread2(string(), list()) -> iodev()| mtxerror().
+mm_openread2(Filename, Opts) ->
+    case file:open(Filename, [read|Opts]) of
 	{ok, IOdev} ->
 	    IOdev;
 	{error, Reason} ->
@@ -119,13 +151,46 @@ mm_read_mtx_array_size(IOdev) ->
 %%--------------------------------------------------------------------
 %% @doc Read an entire matrix market data file.
 %%
-%% The data, if read successfully, will be retured as a `matrix'.
+%% The data, if read successfully, will be retured as a tuple
+%% `{mtxcode(), matrix()}', where `mtxcode()' is a triple from the
+%% matrix file banner.
+%%
+%% The Input file is expected to be uncompressed. Use mm_readfile/2
+%% for compressed files.
 %%
 %% @end
 %%--------------------------------------------------------------------
 -spec mm_readfile(string()) -> {mtxcode(), matrix:matrix()} | mtxerror().
 mm_readfile(Filename) ->
-    case  mm_openread(Filename) of
+    mm_readfile2(Filename, []).
+
+%%--------------------------------------------------------------------
+%% @doc Read an entire matrix market data file.
+%%
+%% This is the same as mm_readfile/1, but for gzip compressed
+%% files. The additional argument should be the atom `compressed'.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_readfile(string(), compressed) -> {mtxcode(), matrix:matrix()} | mtxerror().
+mm_readfile(Filename, compressed) ->
+    mm_readfile2(Filename, [compressed]).
+
+%%--------------------------------------------------------------------
+%% @doc Read an entire matrix market data file.
+%%
+%% The data, if read successfully, will be retured as a tuple
+%% `{mtxcode(), matrix()}', where `mtxcode()' is a triple from the
+%% matrix file banner.
+%%
+%% If the file is compressd (gzip), the `compressed' option should be
+%% supplied.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_readfile2(string(), list()) -> {mtxcode(), matrix:matrix()} | mtxerror().
+mm_readfile2(Filename, Opts) ->
+    case  mm_openread2(Filename, Opts) of
 	Error = {error, _Reason, _Msg} ->
 	    Error;
 	IOdev ->

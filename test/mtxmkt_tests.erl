@@ -63,6 +63,8 @@
 
 -define(File_valid_array_complex_herm, "test/data/testfile-valid-array-complex-herm.mtx").
 
+-define(File_valid_crd_patt_gen_comp, "test/data/testfile-valid-crd-patt-gen.mtx.gz").
+
 
 %%--------------------------------------------------------------------
 %% The tests
@@ -478,4 +480,14 @@ valid_array_complex_herm_test() ->
 		   [{ 12.2, 12.3}, { 15.5,  15.6}, { 16.6, -16.7}, { 17.7, -17.8}],
 		   [{ 13.3, 13.4}, { 16.6,  16.7}, { 18.8,  18.9}, { 19.9, -19.0}],
 		   [{ 14.4, 14.5}, { 17.7,  17.8}, { 19.9,  19.0}, { 20.0,  20.1}]
+		  ]}, {Mtx_code, matrix:to_list(M)}).
+
+% valid coordinate pattern general compressed
+valid_crd_patt_gen_comp_test() ->
+    {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_patt_gen_comp, compressed),
+    ?assertMatch({{coordinate, pattern, general},
+		  [
+		   [1,0,1],
+		   [0,1,0],
+		   [1,0,1]
 		  ]}, {Mtx_code, matrix:to_list(M)}).
