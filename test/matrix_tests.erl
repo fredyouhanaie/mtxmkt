@@ -139,3 +139,15 @@ get_row_outofbounds_row_test() ->
 get_col_outofbounds_col_test() ->
     M = matrix:new(2, 3, 42),
     ?assertMatch(outofbounds, matrix:get_col_list(4, M)).
+
+% map matrix
+map_matrix_test() ->
+    M = matrix:new(2, 3, 42),
+    List = matrix:to_list(matrix:map_matrix(fun (X) -> 2*X end, M)),
+    ?assertMatch([[84, 84, 84], [84, 84, 84]], List).
+
+% fold rows
+fold_rows_test() ->
+    M = matrix:new(2, 3, 42),
+    List = matrix:foldl_rows(fun (Acc, X) -> Acc+X end, 0, M),
+    ?assertMatch([126, 126], List).

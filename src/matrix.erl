@@ -25,6 +25,7 @@
 -export([get_row_list/2, set_row_list/3]).
 -export([get_col_list/2, set_col_list/3]).
 -export([to_list/1, from_list/2]).
+-export([map_matrix/2, foldl_rows/3]).
 
 % we have our own size/1 function
 -compile({no_auto_import, [size/1]}).
@@ -277,3 +278,50 @@ from_list(List, M) ->
     RowsArray = array:from_list(RowList, DefaultRow),	% create array of rows
     Data = array:fix(array:resize(Nrows, RowsArray)),	% ensure it's a fixed array
     maps:update(data, Data, M).
+
+%%--------------------------------------------------------------------
+%% @doc Apply a function against all elements of a matrix
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec map_matrix(function(), matrix:matrix()) -> matrix:matrix().
+map_matrix(Fun, M) ->
+    Mdata1 = maps:get(data, M),
+    Mdata2 = array:map(
+	       fun (_Rnum, Row) ->
+		       array:map(
+			 fun (_Cnum, X) -> Fun(X) end,
+			 Row)
+	       end,
+	       Mdata1
+	      ),
+    maps:update(data, Mdata2, M).
+
+%%--------------------------------------------------------------------
+%% @doc Fold rows of a matrix, and return a list of terms.
+%%
+%% The same fold function will be applied to each row from left to
+%% right. The result is a list of values corresponding to the folded
+%% rows.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec foldl_rows(function(), term(), matrix:matrix()) -> list().
+foldl_rows(Fun, Acc0, M) ->
+    Mdata = maps:get(data, M),
+    lists:map(fun (Row) -> fold_one_row(Fun, Acc0, Row) end,
+	      array:to_list(Mdata)
+	     ).
+
+%%--------------------------------------------------------------------
+%% @doc Fold a single row (array) from left to right.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec fold_one_row(function(), term(), array:array()) -> term().
+fold_one_row(Fun, Acc0, Row) ->
+    array:foldl(fun (_, AccIn, X) ->
+			Fun(X, AccIn)
+		end,
+		Acc0,
+		Row).
