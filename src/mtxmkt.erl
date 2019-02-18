@@ -26,6 +26,7 @@
 -export([mm_read_mtx_crd_size/1, mm_read_mtx_array_size/1]).
 -export([mm_read_matrix_data/2]).
 -export([mm_readfile/1, mm_readfile/2]).
+-export([banner_is_valid/1]).
 
 
 %%====================================================================
@@ -259,56 +260,14 @@ process_banner(Banner) ->
 process_banner_rest([Obj, Fmt, Type, Symm]) ->
     case Obj of
 	matrix ->
-	    case check_banner_mtxtype(Fmt, Type, Symm) of
-		ok ->
+	    case banner_is_valid({Fmt, Type, Symm}) of
+		true ->
 		    {Fmt, Type, Symm};
-		Error ->
-		    Error
+		false ->
+		    {error, mm_invalid_banner, "Invalid matrix file banner"}
 	    end;
 	_ ->
 	    {error, mm_unsupported_type, "Unsupported object type, must be matrix"}
-    end.
-
-%%--------------------------------------------------------------------
-%% @doc Check the second field, format, of the banner.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec check_banner_mtxtype(atom(), atom(), atom()) -> ok | mtxerror().
-check_banner_mtxtype(Fmt, Type, Symm) ->
-    case lists:member(Fmt, ?MtxType) of
-	true ->
-	    check_banner_datatype(Type, Symm);
-	_ ->
-	    {error, mm_unsupported_type, "Unsupported matrix type, not array/coordinate"}
-    end.
-
-%%--------------------------------------------------------------------
-%% @doc Check the third field, data type, of the banner.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec check_banner_datatype(atom(), atom()) -> ok | mtxerror().
-check_banner_datatype(Type, Symm) ->
-    case lists:member(Type, ?DataType) of
-	true ->
-	    check_banner_symmetry(Symm);
-	_ ->
-	    {error, mm_unsupported_type, "Unsupported matrix data type"}
-    end.
-
-%%--------------------------------------------------------------------
-%% @doc Check the fourth field, symmetry, of the banner line.
-%%
-%% @end
-%%--------------------------------------------------------------------
--spec check_banner_symmetry(atom()) -> ok | mtxerror().
-check_banner_symmetry(Symm) ->
-    case lists:member(Symm, ?SymmType) of
-	true ->
-	    ok;
-	_ ->
-	    {error, mm_unsupported_type, "Unsupported matrix symmetry type"}
     end.
 
 %%--------------------------------------------------------------------
@@ -646,3 +605,61 @@ datatype2fmt(array, Type) ->
 	complex ->
 	    {"~f ~f", {0.0, 0.0}}
     end.
+
+%%--------------------------------------------------------------------
+%% @doc Check if a banner triple is valid.
+%%
+%% There are 32 possible combinations of the banner triple, however,
+%% only 22 are valid. These are listed below:
+%%
+%% <pre>
+%% array      | complex | general
+%% array      | complex | hermitian
+%% array      | complex | skew-symmetric
+%% array      | complex | symmetric
+%% array      | integer | general
+%% array      | integer | skew-symmetric
+%% array      | integer | symmetric
+%% array      | real    | general
+%% array      | real    | skew-symmetric
+%% array      | real    | symmetric
+%% coordinate | complex | general
+%% coordinate | complex | hermitian
+%% coordinate | complex | skew-symmetric
+%% coordinate | complex | symmetric
+%% coordinate | integer | general
+%% coordinate | integer | skew-symmetric
+%% coordinate | integer | symmetric
+%% coordinate | pattern | general
+%% coordinate | pattern | symmetric
+%% coordinate | real    | general
+%% coordinate | real    | skew-symmetric
+%% coordinate | real    | symmetric
+%% </pre>
+%%
+%% The function will return `true' if the triple matches the values in
+%% `mtxcode()' as well as the above combinations.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec banner_is_valid(mtxcode()) -> boolean().
+banner_is_valid(Mtxcode = {Frmt, Type, Symm}) ->
+    Frmt_ok = lists:member(Frmt, ?MtxType),
+    Type_ok = lists:member(Type, ?DataType),
+    Symm_ok = lists:member(Symm, ?SymmType),
+
+    Frmt_ok andalso Type_ok andalso Symm_ok andalso banner_is_valid2(Mtxcode).
+
+%%--------------------------------------------------------------------
+%% @doc Check that the banner triple combination is valid.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec banner_is_valid2(mtxcode()) -> boolean().
+banner_is_valid2({array     , complex, hermitian})		-> true;
+banner_is_valid2({coordinate, complex, hermitian})		-> true;
+banner_is_valid2({_Format   , _Type  , hermitian})		-> false;
+banner_is_valid2({coordinate, pattern, general})		-> true;
+banner_is_valid2({coordinate, pattern, symmetric})		-> true;
+banner_is_valid2({_Format   , pattern, _Symm})			-> false;
+banner_is_valid2({_Format   , _Type,   _Symm})			-> true.

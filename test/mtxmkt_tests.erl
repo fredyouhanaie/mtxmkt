@@ -125,21 +125,21 @@ banner_invalid_object_test() ->
 banner_invalid_format_test() ->
     IOdev = mtxmkt:mm_openread(?File_invalid_format),
     ?assert(is_pid(IOdev)),
-    ?assertMatch({error, mm_unsupported_type, _Msg}, mtxmkt:mm_read_banner(IOdev)),
+    ?assertMatch({error, mm_invalid_banner, _Msg}, mtxmkt:mm_read_banner(IOdev)),
     file:close(IOdev).
 
 % invalid banner field - data type
 banner_invalid_datatype_test() ->
     IOdev = mtxmkt:mm_openread(?File_invalid_datatype),
     ?assert(is_pid(IOdev)),
-    ?assertMatch({error, mm_unsupported_type, _Msg}, mtxmkt:mm_read_banner(IOdev)),
+    ?assertMatch({error, mm_invalid_banner, _Msg}, mtxmkt:mm_read_banner(IOdev)),
     file:close(IOdev).
 
 % invalid banner field - symmetry
 banner_invalid_symmetry_test() ->
     IOdev = mtxmkt:mm_openread(?File_invalid_symmetry),
     ?assert(is_pid(IOdev)),
-    ?assertMatch({error, mm_unsupported_type, _Msg}, mtxmkt:mm_read_banner(IOdev)),
+    ?assertMatch({error, mm_invalid_banner, _Msg}, mtxmkt:mm_read_banner(IOdev)),
     file:close(IOdev).
 
 % valid banner
@@ -491,3 +491,42 @@ valid_crd_patt_gen_comp_test() ->
 		   [0,1,0],
 		   [1,0,1]
 		  ]}, {Mtx_code, matrix:to_list(M)}).
+
+% invalid banner elements
+invalid_banner_1_test() ->
+    ?assertNot(mtxmkt:banner_is_valid({arry , complex, general})).
+invalid_banner_2_test() ->
+    ?assertNot(mtxmkt:banner_is_valid({array , cmplex, general})).
+invalid_banner_3_test() ->
+    ?assertNot(mtxmkt:banner_is_valid({array , complex, gneral})).
+
+% valid banner combo
+valid_banner_combo_test() ->
+    ?assert(mtxmkt:banner_is_valid({array     , complex, 'general'})),
+    ?assert(mtxmkt:banner_is_valid({array     , complex, 'hermitian'})),
+    ?assert(mtxmkt:banner_is_valid({array     , complex, 'skew-symmetric'})),
+    ?assert(mtxmkt:banner_is_valid({array     , complex, 'symmetric'})),
+    ?assert(mtxmkt:banner_is_valid({array     , integer, 'general'})),
+    ?assert(mtxmkt:banner_is_valid({array     , integer, 'skew-symmetric'})),
+    ?assert(mtxmkt:banner_is_valid({array     , integer, 'symmetric'})),
+    ?assert(mtxmkt:banner_is_valid({array     , real   , 'general'})),
+    ?assert(mtxmkt:banner_is_valid({array     , real   , 'skew-symmetric'})),
+    ?assert(mtxmkt:banner_is_valid({array     , real   , 'symmetric'})),
+    ?assert(mtxmkt:banner_is_valid({coordinate, complex, 'general'})),
+    ?assert(mtxmkt:banner_is_valid({coordinate, complex, 'hermitian'})),
+    ?assert(mtxmkt:banner_is_valid({coordinate, complex, 'skew-symmetric'})),
+    ?assert(mtxmkt:banner_is_valid({coordinate, complex, 'symmetric'})),
+    ?assert(mtxmkt:banner_is_valid({coordinate, integer, 'general'})),
+    ?assert(mtxmkt:banner_is_valid({coordinate, integer, 'skew-symmetric'})),
+    ?assert(mtxmkt:banner_is_valid({coordinate, integer, 'symmetric'})),
+    ?assert(mtxmkt:banner_is_valid({coordinate, pattern, 'general'})),
+    ?assert(mtxmkt:banner_is_valid({coordinate, pattern, 'symmetric'})),
+    ?assert(mtxmkt:banner_is_valid({coordinate, real   , 'general'})),
+    ?assert(mtxmkt:banner_is_valid({coordinate, real   , 'skew-symmetric'})),
+    ?assert(mtxmkt:banner_is_valid({coordinate, real   , 'symmetric'})).
+
+% invalid banner combo
+invalid_banner_combo_1_test() ->
+    ?assertNot(mtxmkt:banner_is_valid({array, integer, hermitian})).
+invalid_banner_combo_2_test() ->
+    ?assertNot(mtxmkt:banner_is_valid({array, pattern, general})).
