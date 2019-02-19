@@ -151,3 +151,9 @@ fold_rows_test() ->
     M = matrix:new(2, 3, 42),
     List = matrix:foldl_rows(fun (Acc, X) -> Acc+X end, 0, M),
     ?assertMatch([126, 126], List).
+
+% count default values
+count_defaults_1_test() ->
+    M = matrix:new(2, 3, 42),
+    Count = matrix:default_count(M),
+    ?assertMatch(Count, 6).

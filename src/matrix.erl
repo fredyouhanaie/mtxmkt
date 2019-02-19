@@ -26,6 +26,7 @@
 -export([get_col_list/2, set_col_list/3]).
 -export([to_list/1, from_list/2]).
 -export([map_matrix/2, foldl_rows/3]).
+-export([default_count/1]).
 
 % we have our own size/1 function
 -compile({no_auto_import, [size/1]}).
@@ -325,3 +326,19 @@ fold_one_row(Fun, Acc0, Row) ->
 		end,
 		Acc0,
 		Row).
+
+%%--------------------------------------------------------------------
+%% @doc Count the number of element with default value.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec default_count(matrix:matrix()) -> integer().
+default_count(M) ->
+    Default = default(M),
+    Count_default = fun (Acc, X) ->
+			    if
+				X == Default -> Acc+1;
+				true -> Acc
+			    end
+		    end,
+    lists:sum(foldl_rows(Count_default, 0, M)).
