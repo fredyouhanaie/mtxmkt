@@ -90,7 +90,7 @@ mm_openread2(Filename, Opts) ->
 	{ok, IOdev} ->
 	    IOdev;
 	{error, Reason} ->
-	    {error, Reason, "Could not open the file"}
+	    {error, Reason, "Could not open the file for read"}
     end.
 
 %%--------------------------------------------------------------------
