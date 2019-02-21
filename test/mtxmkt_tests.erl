@@ -537,3 +537,23 @@ invalid_banner_combo_1_test() ->
     ?assertNot(mtxmkt:banner_is_valid({array, integer, hermitian})).
 invalid_banner_combo_2_test() ->
     ?assertNot(mtxmkt:banner_is_valid({array, pattern, general})).
+
+% format for writing data
+dt2fmt_w_test() ->
+    ?assertMatch("~f ~f~n",	  		mtxmkt:datatype2fmt_w(array, complex)),
+    ?assertMatch("~b~n",	  		mtxmkt:datatype2fmt_w(array, integer)),
+    ?assertMatch("~f~n",	  		mtxmkt:datatype2fmt_w(array, real)),
+    ?assertMatch("~b ~b ~f ~f~n", 		mtxmkt:datatype2fmt_w(coordinate, complex)),
+    ?assertMatch("~b ~b ~b~n",	  		mtxmkt:datatype2fmt_w(coordinate, integer)),
+    ?assertMatch("~b ~b~n",	  		mtxmkt:datatype2fmt_w(coordinate, pattern)),
+    ?assertMatch("~b ~b ~f~n",	  		mtxmkt:datatype2fmt_w(coordinate, real)).
+
+% format for reading data
+dt2fmt_r_test() ->
+    ?assertMatch({"~f ~f", {0.0, 0.0}},		mtxmkt:datatype2fmt_r(array, complex)),
+    ?assertMatch({"~d", 0},			mtxmkt:datatype2fmt_r(array, integer)),
+    ?assertMatch({"~f", 0.0},			mtxmkt:datatype2fmt_r(array, real)),
+    ?assertMatch({"~d ~d ~f ~f", {0.0, 0.0}},	mtxmkt:datatype2fmt_r(coordinate, complex)),
+    ?assertMatch({"~d ~d ~d", 0},		mtxmkt:datatype2fmt_r(coordinate, integer)),
+    ?assertMatch({"~d ~d", 0},			mtxmkt:datatype2fmt_r(coordinate, pattern)),
+    ?assertMatch({"~d ~d ~f", 0.0},		mtxmkt:datatype2fmt_r(coordinate, real)).

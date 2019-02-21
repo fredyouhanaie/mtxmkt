@@ -568,12 +568,12 @@ read_matrix_size(IOdev, array) ->
 %%--------------------------------------------------------------------
 -spec process_matrix(iodev(), mtxcode(), {integer(), integer(), integer()}) ->  matrix:mtrix()| mtxerror().
 process_matrix(IOdev, {coordinate, Data_type, Symm_type}, {Nrows, Ncols, Nelems}) ->
-    {Fmt, Mtx_default} = datatype2fmt(coordinate, Data_type),
+    {Fmt, Mtx_default} = datatype2fmt_r(coordinate, Data_type),
     M = matrix:new(Nrows, Ncols, Mtx_default),
     read_data_crd(IOdev, Fmt, Nelems, M, Symm_type);
 
 process_matrix(IOdev, {array, Data_type, Symm_type}, {Nrows, Ncols}) ->
-    {Fmt, Mtx_default} = datatype2fmt(array, Data_type),
+    {Fmt, Mtx_default} = datatype2fmt_r(array, Data_type),
     M = matrix:new(Nrows, Ncols, Mtx_default),
     read_data_array(IOdev, Fmt, Symm_type, Nrows, Ncols, 1, M).
 
@@ -588,15 +588,15 @@ process_matrix(IOdev, {array, Data_type, Symm_type}, {Nrows, Ncols}) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec datatype2fmt(mtxformat(), mtxtype()) -> {string(), integer()|float()|complex()}.
-datatype2fmt(coordinate, pattern) ->
+-spec datatype2fmt_r(mtxformat(), mtxtype()) -> {string(), integer()|float()|complex()}.
+datatype2fmt_r(coordinate, pattern) ->
     {"~d ~d", 0};
 
-datatype2fmt(coordinate, Type) ->
-    {Format, Default} = datatype2fmt(array, Type),
+datatype2fmt_r(coordinate, Type) ->
+    {Format, Default} = datatype2fmt_r(array, Type),
     {"~d ~d " ++ Format, Default};
 
-datatype2fmt(array, Type) ->
+datatype2fmt_r(array, Type) ->
     case Type of
 	integer ->
 	    {"~d", 0};
@@ -605,6 +605,31 @@ datatype2fmt(array, Type) ->
 	complex ->
 	    {"~f ~f", {0.0, 0.0}}
     end.
+
+%%--------------------------------------------------------------------
+%% @doc Return the format needed for io:format for a given matrix
+%% type.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec datatype2fmt_w(mtxformat(), mtxtype()) -> string().
+datatype2fmt_w(coordinate, pattern) ->
+    "~b ~b~n";
+
+datatype2fmt_w(coordinate, Type) ->
+    Format = datatype2fmt_w(array, Type),
+    "~b ~b " ++ Format;
+
+datatype2fmt_w(array, Type) ->
+    case Type of
+	integer ->
+	    "~b~n";
+	real ->
+	    "~f~n";
+	complex ->
+	    "~f ~f~n"
+    end.
+
 
 %%--------------------------------------------------------------------
 %% @doc Check if a banner triple is valid.
