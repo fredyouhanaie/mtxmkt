@@ -155,5 +155,6 @@ fold_rows_test() ->
 % count default values
 count_defaults_1_test() ->
     M = matrix:new(2, 3, 42),
-    Count = matrix:default_count(M),
-    ?assertMatch(Count, 6).
+    M2 = matrix:set(2, 2, 24, M),
+    Count = matrix:default_count(M2),
+    ?assertMatch(Count, 5).

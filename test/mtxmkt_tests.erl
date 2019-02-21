@@ -482,6 +482,13 @@ valid_array_complex_herm_test() ->
 		   [{ 14.4, 14.5}, { 17.7,  17.8}, { 19.9,  19.0}, { 20.0,  20.1}]
 		  ]}, {Mtx_code, matrix:to_list(M)}).
 
+% valid compressed file open
+valid_open_compressed_test() ->
+    IOdev = mtxmkt:mm_openread(?File_valid_crd_patt_gen_comp, compressed),
+    ?assert(is_pid(IOdev)),
+    ?assertMatch({coordinate, pattern, general}, mtxmkt:mm_read_banner(IOdev)),
+    file:close(IOdev).
+
 % valid coordinate pattern general compressed
 valid_crd_patt_gen_comp_test() ->
     {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_patt_gen_comp, compressed),
