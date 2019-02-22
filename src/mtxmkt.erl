@@ -23,6 +23,7 @@
 
 %% API exports
 -export([mm_openread/1, mm_openread/2, mm_read_banner/1]).
+-export([mm_openwrite/1, mm_openwrite/2, mm_write_banner/3]).
 -export([mm_read_mtx_crd_size/1, mm_read_mtx_array_size/1]).
 -export([mm_read_matrix_data/2]).
 -export([mm_readfile/1, mm_readfile/2]).
@@ -91,6 +92,41 @@ mm_openread2(Filename, Opts) ->
 	    IOdev;
 	{error, Reason} ->
 	    {error, Reason, "Could not open the file for read"}
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc open a matrix file for writing.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_openwrite(string()) -> iodev() | mtxerror().
+mm_openwrite(Filename) ->
+    mm_openwrite2(Filename, []).
+
+%%--------------------------------------------------------------------
+%% @doc open a matrix file for writing in compressed format.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_openwrite(string(), compressed) -> iodev() | mtxerror().
+mm_openwrite(Filename, compressed) ->
+    mm_openwrite2(Filename, [compressed]).
+
+%%--------------------------------------------------------------------
+%% @doc open a matrix file for writing.
+%%
+%% To create gzip compressed file, the `[compressed]' option should be
+%% supplied.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_openwrite2(string(), list()) -> iodev() | mtxerror().
+mm_openwrite2(Filename, Opts) ->
+    case file:open(Filename, [write|Opts]) of
+	{ok, IOdev} ->
+	    IOdev;
+	{error, Reason} ->
+	    {error, Reason, "Could not open the file for write"}
     end.
 
 %%--------------------------------------------------------------------
@@ -208,6 +244,33 @@ mm_readfile2(Filename, Opts) ->
 		     end,
 	    file:close(IOdev),
 	    Result
+    end.
+
+%%--------------------------------------------------------------------
+%% @doc Write a banner and matrix sizes to the open file.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_write_banner(iodev(), mtxcode(), matrix:matrix()) -> ok | mtxerror().
+mm_write_banner(IOdev, Mtxcode, M) ->
+    {Fmt, _Type, _Symm} = Mtxcode,
+    case banner_is_valid(Mtxcode) of
+	true ->
+	    io:format(IOdev, "~s matrix ~s ~s ~s~n",
+		      [?MatrixMarketBanner |
+		       lists:map(fun (X) -> atom_to_list(X) end, tuple_to_list(Mtxcode))
+		      ]
+		     ),
+	    {Nrows, Ncols} = matrix:size(M),
+	    case Fmt of
+		coordinate ->
+		    Nelems = Nrows*Ncols-matrix:default_count(M),
+		    io:format(IOdev, "~p ~p ~p~n", [Nrows, Ncols, Nelems]);
+		array ->
+		    io:format(IOdev, "~p ~p~n", [Nrows, Ncols])
+	    end;
+	false ->
+	    {error, mm_invalid_banner, "Invalid matrix banner supplied"}
     end.
 
 %%--------------------------------------------------------------------

@@ -9,6 +9,7 @@
 -module(mtxmkt_tests).
 
 -include_lib("eunit/include/eunit.hrl").
+-include_lib("kernel/include/file.hrl").
 
 -define(File_nofile, "test/data/nofile.mtx"). %% this file should not exist!
 -define(File_nulldev, "/dev/null"). %% will work in Unix, not sure about windows!
@@ -557,3 +558,77 @@ dt2fmt_r_test() ->
     ?assertMatch({"~d ~d ~d", 0},		mtxmkt:datatype2fmt_r(coordinate, integer)),
     ?assertMatch({"~d ~d", 0},			mtxmkt:datatype2fmt_r(coordinate, pattern)),
     ?assertMatch({"~d ~d ~f", 0.0},		mtxmkt:datatype2fmt_r(coordinate, real)).
+
+% open matrix file for write
+openwrite_file_1_test() ->
+    Testfile = "testfile.mtx",
+    file:delete(Testfile),
+    IOdev = mtxmkt:mm_openwrite(Testfile),
+    ?assert(is_pid(IOdev)),
+    file:close(IOdev),
+    file:delete(Testfile).
+
+% open matrix file for write (compressed)
+openwrite_file_2_test() ->
+    Testfile = "testfile.mtx.gz",
+    file:delete(Testfile),
+    IOdev = mtxmkt:mm_openwrite(Testfile, compressed),
+    ?assert(is_pid(IOdev)),
+    file:close(IOdev),
+    file:delete(Testfile).
+
+% open matrix file for write, catch error
+openwrite_file_3_test() ->
+    Testfile = "testfile.mtx",
+    file:delete(Testfile),
+    {ok, IOdev1} = file:open(Testfile, [write]),
+    ok = file:close(IOdev1),
+    ok = file:write_file_info(Testfile, #file_info{mode=8#444}),
+    ?assertMatch({error, eacces, _Msg}, mtxmkt:mm_openwrite(Testfile)),
+    file:delete(Testfile).
+
+% create a new file with banner (array)
+write_banner_1_test() ->
+    Testfile = "testfile.mtx",
+    file:delete(Testfile),
+    IOdev_w = mtxmkt:mm_openwrite(Testfile),
+    ?assert(is_pid(IOdev_w)),
+    M = matrix:new(2, 3, 42),
+    Mtxcode = {array, integer, general},
+    ?assertMatch('ok', mtxmkt:mm_write_banner(IOdev_w, Mtxcode, M)),
+    file:close(IOdev_w),
+    IOdev_r = mtxmkt:mm_openread(Testfile),
+    ?assert(is_pid(IOdev_r)),
+    ?assertMatch(Mtxcode, mtxmkt:mm_read_banner(IOdev_r)),
+    ?assertMatch({2, 3}, mtxmkt:mm_read_mtx_array_size(IOdev_r)),
+    file:close(IOdev_r),
+    file:delete(Testfile).
+
+% create a new file with banner (coordinate)
+write_banner_2_test() ->
+    Testfile = "testfile.mtx",
+    file:delete(Testfile),
+    IOdev_w = mtxmkt:mm_openwrite(Testfile),
+    ?assert(is_pid(IOdev_w)),
+    M = matrix:set_row_list(2, [1, 2, 3], matrix:new(2, 3, 42)),
+    Mtxcode = {coordinate, integer, general},
+    ?assertMatch('ok', mtxmkt:mm_write_banner(IOdev_w, Mtxcode, M)),
+    file:close(IOdev_w),
+    IOdev_r = mtxmkt:mm_openread(Testfile),
+    ?assert(is_pid(IOdev_r)),
+    ?assertMatch(Mtxcode, mtxmkt:mm_read_banner(IOdev_r)),
+    ?assertMatch({2, 3, 3}, mtxmkt:mm_read_mtx_crd_size(IOdev_r)),
+    file:close(IOdev_r),
+    file:delete(Testfile).
+
+% create a new file with bad banner
+write_banner_3_test() ->
+    Testfile = "testfile.mtx",
+    file:delete(Testfile),
+    IOdev = mtxmkt:mm_openwrite(Testfile),
+    ?assert(is_pid(IOdev)),
+    M = matrix:new(2, 3, 42),
+    Mtxcode = {coordray, integer, general},
+    ?assertMatch({error, mm_invalid_banner, _Msg}, mtxmkt:mm_write_banner(IOdev, Mtxcode, M)),
+    file:close(IOdev),
+    file:delete(Testfile).
