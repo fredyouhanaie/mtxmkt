@@ -632,3 +632,104 @@ write_banner_3_test() ->
     ?assertMatch({error, mm_invalid_banner, _Msg}, mtxmkt:mm_write_banner(IOdev, Mtxcode, M)),
     file:close(IOdev),
     file:delete(Testfile).
+
+% create a new matrix file (array)
+write_array_1_test() ->
+    Testfile = "testfile.mtx",
+    file:delete(Testfile),
+    Mtxcode1 = {array, integer, general},
+    M1 = matrix:set_row_list(2, [1, 2, 3], matrix:new(2, 3, 42)),
+    ?assertMatch('ok', mtxmkt:mm_writefile(Testfile, Mtxcode1, M1)),
+    {Mtxcode2, M2} = mtxmkt:mm_readfile(Testfile),
+    ?assertMatch(Mtxcode1, Mtxcode2),
+    ?assert(matrix:to_list(M1) == matrix:to_list(M2)),
+    file:delete(Testfile).
+
+% create a new compressed matrix file (array)
+write_array_2_test() ->
+    Testfile = "testfile.mtx.gz",
+    file:delete(Testfile),
+    Mtxcode1 = {array, integer, general},
+    M1 = matrix:set_row_list(2, [1, 2, 3], matrix:new(2, 3, 42)),
+    ?assertMatch('ok', mtxmkt:mm_writefile(Testfile, compressed, Mtxcode1, M1)),
+    {Mtxcode2, M2} = mtxmkt:mm_readfile(Testfile, compressed),
+    ?assertMatch(Mtxcode1, Mtxcode2),
+    ?assert(matrix:to_list(M1) == matrix:to_list(M2)),
+    file:delete(Testfile).
+
+% create a new matrix file (array) expecting permission error
+write_array_3_test() ->
+    Testfile = "testfile.mtx",
+    file:delete(Testfile),
+    {ok, IOdev} = file:open(Testfile, [write]),
+    ok = file:close(IOdev),
+    ok = file:write_file_info(Testfile, #file_info{mode=8#444}),
+    Mtxcode1 = {array, integer, general},
+    M1 = matrix:set_row_list(2, [1, 2, 3], matrix:new(2, 3, 42)),
+    ?assertMatch({error, eacces, _Msg}, mtxmkt:mm_writefile(Testfile, Mtxcode1, M1)),
+    file:delete(Testfile).
+
+% create a new matrix file (array) invalid banner
+write_array_4_test() ->
+    Testfile = "testfile.mtx",
+    file:delete(Testfile),
+    {ok, IOdev} = file:open(Testfile, [write]),
+    ok = file:close(IOdev),
+    ok = file:write_file_info(Testfile, #file_info{mode=8#444}),
+    Mtxcode1 = {coordray, integer, general},
+    M1 = matrix:set_row_list(2, [1, 2, 3], matrix:new(2, 3, 42)),
+    ?assertMatch({error, mm_invalid_banner, _Msg}, mtxmkt:mm_writefile(Testfile, Mtxcode1, M1)),
+    file:delete(Testfile).
+
+% create a new matrix file (array complex general)
+write_array_5_test() ->
+    Testfile = "testfile.mtx",
+    file:delete(Testfile),
+    Mtxcode1 = {array, complex, general},
+    M1 = matrix:set_row_list(2, [{1.1, 2.2}, {3.3, 4.4}, {5.5, 6.6}], matrix:new(2, 3, {0.0, 0.0})),
+    ?assertMatch('ok', mtxmkt:mm_writefile(Testfile, Mtxcode1, M1)),
+    {Mtxcode2, M2} = mtxmkt:mm_readfile(Testfile),
+    ?assertMatch(Mtxcode1, Mtxcode2),
+    ?assert(matrix:to_list(M1) == matrix:to_list(M2)),
+    file:delete(Testfile).
+
+% create a new matrix file (array real symmetric)
+write_array_6_test() ->
+    Testfile = "testfile.mtx",
+    file:delete(Testfile),
+    Mtxcode1 = {array, real, symmetric},
+    M1 = matrix:from_list([
+			   [1.1, 2.2, 3.3],
+			   [2.2, 4.4, 5.5],
+			   [3.3, 5.5, 6.6]
+			  ],
+			 matrix:new(3, 3, 0.0)),
+    ?assertMatch('ok', mtxmkt:mm_writefile(Testfile, Mtxcode1, M1)),
+    {Mtxcode2, M2} = mtxmkt:mm_readfile(Testfile),
+    ?assertMatch(Mtxcode1, Mtxcode2),
+    ?assert(matrix:to_list(M1) == matrix:to_list(M2)),
+    file:delete(Testfile).
+
+% create a new matrix file (coordinate integer general)
+write_coord_1_test() ->
+    Testfile = "testfile.mtx",
+    file:delete(Testfile),
+    Mtxcode1 = {coordinate, integer, general},
+    M1 = matrix:set_row_list(2, [4, 5, 6], matrix:new(2, 3, 0)),
+    ?assertMatch('ok', mtxmkt:mm_writefile(Testfile, Mtxcode1, M1)),
+    {Mtxcode2, M2} = mtxmkt:mm_readfile(Testfile),
+    ?assertMatch(Mtxcode1, Mtxcode2),
+    ?assert(matrix:to_list(M1) == matrix:to_list(M2)),
+    file:delete(Testfile).
+
+% create a new matrix file (coordinate complex general)
+write_coord_2_test() ->
+    Testfile = "testfile.mtx",
+    file:delete(Testfile),
+    Mtxcode1 = {coordinate, complex, general},
+    M1 = matrix:set_row_list(2, [{4.1, 4.2}, {5.1, 5.2}, {6.1, 6.2}], matrix:new(2, 3, {0.0, 0.0})),
+    ?assertMatch('ok', mtxmkt:mm_writefile(Testfile, Mtxcode1, M1)),
+    {Mtxcode2, M2} = mtxmkt:mm_readfile(Testfile),
+    ?assertMatch(Mtxcode1, Mtxcode2),
+    ?assert(matrix:to_list(M1) == matrix:to_list(M2)),
+    file:delete(Testfile).

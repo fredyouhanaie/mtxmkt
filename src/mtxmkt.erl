@@ -26,7 +26,9 @@
 -export([mm_openwrite/1, mm_openwrite/2, mm_write_banner/3]).
 -export([mm_read_mtx_crd_size/1, mm_read_mtx_array_size/1]).
 -export([mm_read_matrix_data/2]).
+-export([mm_write_matrix_data/3]).
 -export([mm_readfile/1, mm_readfile/2]).
+-export([mm_writefile/3, mm_writefile/4]).
 -export([banner_is_valid/1]).
 
 
@@ -247,6 +249,60 @@ mm_readfile2(Filename, Opts) ->
     end.
 
 %%--------------------------------------------------------------------
+%% @doc Write a matrix to file, in the format supplied.
+%%
+%% The file will be created in uncompressed format. If the file
+%% already exists, it will be overwritten.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_writefile(string(), mtxcode(), matrix:matrix()) -> ok | mtxerror().
+mm_writefile(Filename, Mtxcode, M) ->
+    mm_writefile2(Filename, [], Mtxcode, M).
+
+%%--------------------------------------------------------------------
+%% @doc Write a matrix to file, in the format supplied.
+%%
+%% The file will be created in compressed format. If the file already
+%% exists, it will be overwritten.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_writefile(string(), compressed, mtxcode(), matrix:matrix()) -> ok | mtxerror().
+mm_writefile(Filename, compressed, Mtxcode, M) ->
+    mm_writefile2(Filename, [compressed], Mtxcode, M).
+
+%%--------------------------------------------------------------------
+%% @doc Write a matrix to file, in the format supplied.
+%%
+%% This function is called by the exported "wrapper" functions,
+%% `mm_writefile/3' and `mm_writefile/4'. It performs the real matrix
+%% write function.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_writefile2(string(), list(), mtxcode(), matrix:matrix()) -> ok | mtxerror().
+mm_writefile2(Filename, Opts, Mtxcode, M) ->
+    case banner_is_valid(Mtxcode) of
+	true ->
+	    case mm_openwrite2(Filename, Opts) of
+		Error = {error, _Reason, _Msg} ->
+		    Error;
+		IOdev ->
+		    Result = case mm_write_banner(IOdev, Mtxcode, M) of
+				 Error = {error, _Reason, _Msg} ->
+				     Error;
+				 ok ->
+				     mm_write_matrix_data(IOdev, Mtxcode, M)
+			     end,
+		    file:close(IOdev),
+		    Result
+	    end;
+	false ->
+	    {error, mm_invalid_banner, "Invalid matrix banner"}
+    end.
+
+%%--------------------------------------------------------------------
 %% @doc Write a banner and matrix sizes to the open file.
 %%
 %% @end
@@ -272,6 +328,120 @@ mm_write_banner(IOdev, Mtxcode, M) ->
 	false ->
 	    {error, mm_invalid_banner, "Invalid matrix banner supplied"}
     end.
+
+%%--------------------------------------------------------------------
+%% @doc Write the matrix data to the open file.
+%%
+%% Prior to this call we expect the file to have been opened, and the
+%% banner and sizes to have been written to the file.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec mm_write_matrix_data(iodev(), mtxcode(), matrix:matrix()) -> ok | mtxerror().
+mm_write_matrix_data(IOdev, {array, Type, Symm}, M) ->
+    {_Nrows, Ncols} = matrix:size(M),
+    IOfmt = datatype2fmt_w(array, Type),
+    write_data_col_array(IOdev, M, Symm, 1, Ncols, IOfmt);
+
+mm_write_matrix_data(IOdev, {coordinate, Type, Symm}, M) ->
+    {Nrows, _Ncols} = matrix:size(M),
+    IOfmt = datatype2fmt_w(coordinate, Type),
+    write_data_row_crd(IOdev, M, Symm, 1, Nrows, IOfmt);
+
+mm_write_matrix_data(_IOdev, _Mtxcode, _M) ->
+    {error, mm_invalid_banner, "Invalid matrix banner"}.
+
+
+%%--------------------------------------------------------------------
+%% @doc Write out the columns of a matrix in array format.
+%%
+%% For `general' format, we write all the data. For `symmetric' and
+%% `skew-symmetric', we only write the lower diagonal, including the
+%% diagonal.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec write_data_col_array(iodev(), matrix:matrix(), mtxsymm(), integer(), integer(), string()) -> ok.
+write_data_col_array(_IOdev, _M, _Symm, _Col_num, 0, _Fmt) ->
+    ok;
+
+write_data_col_array(IOdev, M, Symm, Col_num, Ncols, Fmt) ->
+    Col_list = case Symm of
+		   general ->
+		       matrix:get_col_list(Col_num, M);
+		   _ ->
+		       lists:nthtail(Col_num-1, matrix:get_col_list(Col_num, M))
+	       end,
+    write_data_items_array(IOdev, Col_list, Fmt),
+    write_data_col_array(IOdev, M, Symm, Col_num+1, Ncols-1, Fmt).
+
+%%--------------------------------------------------------------------
+%% @doc Write out the rows of a matrix in coordinate format.
+%%
+%% Unlike the `array' format, which should be written out as columns,
+%% the `coordinate' format can be written as rows.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec write_data_row_crd(iodev(), matrix:matrix(), mtxsymm(), integer(), integer(), string()) -> ok.
+write_data_row_crd(_IOdev, _M, _Symm, _Row_num, 0, _Fmt) ->
+    ok;
+
+write_data_row_crd(IOdev, M, general, Row_num, Nrows, Fmt) ->
+    Default = matrix:default(M),
+    % Row_list0 is the entire row
+    Row_list0 = matrix:get_row_list(Row_num, M),
+    % Row_list1 is the entire row with each element with coordinates
+    Row_list1 = [ [Row_num, Col_num, lists:nth(Col_num, Row_list0)]
+		  || Col_num <- lists:seq(1, length(Row_list0))
+		],
+    Row_list2 = [ [R, C, X] || [R, C, X] <- Row_list1, X /= Default ],
+    write_data_items_crd(IOdev, Row_list2, Fmt),
+    write_data_row_crd(IOdev, M, general, Row_num+1, Nrows-1, Fmt).
+
+%%--------------------------------------------------------------------
+%% @doc Write a list of data items.
+%%
+%% The `Item' can be a single value or multiple, for example in the
+%% case of a complex value.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec write_data_items_array(iodev(), list(), string()) -> ok.
+write_data_items_array(_IOdev, [], _Fmt) ->
+    ok;
+write_data_items_array(IOdev, [Item|Item_list], Fmt) ->
+    Items = case Item of
+		{Real, Imag} ->
+		    [Real, Imag];
+		_ ->
+		    [Item]
+	    end,
+    io:format(IOdev, Fmt, Items),
+    write_data_items_array(IOdev, Item_list, Fmt).
+
+%%--------------------------------------------------------------------
+%% @doc Write a list of data items.
+%%
+%% The `Item' can be a single value or multiple, for example in the
+%% case of a complex value.
+%%
+%% @end
+%%--------------------------------------------------------------------
+-spec write_data_items_crd(iodev(), list(), string()) -> ok.
+write_data_items_crd(_IOdev, [], _Fmt) ->
+    ok;
+write_data_items_crd(IOdev, [Item|Item_list], Fmt) ->
+    Items = lists:map(fun (X) ->
+			      case X of
+				  {Real, Imag} ->
+				      [Real, Imag];
+				  _ ->
+				      X
+			      end
+		      end, Item),
+    io:format(IOdev, Fmt, lists:flatten(Items)),
+    write_data_items_crd(IOdev, Item_list, Fmt).
 
 %%--------------------------------------------------------------------
 %% @doc Read and return the matrix data for a given
