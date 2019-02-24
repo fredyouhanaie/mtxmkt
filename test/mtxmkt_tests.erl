@@ -733,3 +733,21 @@ write_coord_2_test() ->
     ?assertMatch(Mtxcode1, Mtxcode2),
     ?assert(matrix:to_list(M1) == matrix:to_list(M2)),
     file:delete(Testfile).
+
+% explicitly open file and write matrix
+write_data_bad_banner_test() ->
+    Testfile = "testfile.mtx",
+    file:delete(Testfile),
+
+    IOdev = mtxmkt:mm_openwrite(Testfile),
+    ?assert(is_pid(IOdev)),
+
+    Mtxcode1 = {coordinate, complex, general},
+    M = matrix:new(2, 3, {0.0, 0.0}),
+    ?assertMatch(ok, mtxmkt:mm_write_banner(IOdev, Mtxcode1, M)),
+
+    Mtxcode2 = {coordray, complex, general},
+    ?assertMatch({error, mm_invalid_banner, _Msg}, mtxmkt:mm_write_matrix_data(IOdev, Mtxcode2, M)),
+
+    file:close(IOdev),
+    file:delete(Testfile).
