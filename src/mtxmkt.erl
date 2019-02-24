@@ -559,7 +559,7 @@ skip_comments(IOdev) ->
 		$% ->
 		    skip_comments(IOdev);
 		_ ->
-		    Line
+		    string:trim(Line)
 	    end
     end.
 
@@ -692,7 +692,7 @@ read_data_entry(IOdev, Fmt) ->
 	Error = {error, _Reason, _Msg} ->
 	    Error;
 	Line when is_list(Line) ->
-	    case io_lib:fread(Fmt, Line) of
+	    case io_lib:fread(Fmt, string:trim(Line)) of
 		{ok, Data, []} ->
 		    Data;
 		_ ->
