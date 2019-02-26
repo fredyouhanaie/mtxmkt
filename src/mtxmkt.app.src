@@ -1,5 +1,5 @@
 {application, mtxmkt,
- [{description, "Library to handle Matrix Market files"},
+ [{description, "Library for handling Matrix Market files"},
   {vsn, "0.1.0"},
   {registered, []},
   {applications,
@@ -11,5 +11,5 @@
 
   {maintainers, ["Fred Youhanaie"]},
   {licenses, ["Apache 2.0"]},
-  {links, []}
+  {links, [{"Github", "https://github.com/fredyouhanaie/mtxmkt"}]}
  ]}.
