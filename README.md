@@ -1,5 +1,6 @@
 # mtxmkt
 
+[![Build Status](https://travis-ci.com/fredyouhanaie/mtxmkt.svg?branch=master)](https://travis-ci.com/fredyouhanaie/mtxmkt)
 
 [Matrix Market](https://math.nist.gov/MatrixMarket/) is a service from
 NIST that provides a repository of test matrices for various
