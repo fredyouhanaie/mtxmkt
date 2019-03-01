@@ -20,6 +20,26 @@ tools and services.</i></blockquote>
 format of the files is described <a
 href="https://math.nist.gov/MatrixMarket/formats.html">here</a>.
 
-The library functions are based on the <a
-href="https://math.nist.gov/MatrixMarket/mmio-c.html">mmio C
-library</a> provided by Matrix market.
+The library functions are loosely based on the <a
+href="https://math.nist.gov/MatrixMarket/mmio-c.html"> mmio C library
+</a> provided by Matrix market.
+
+The <code>mtxmkt</code> module handles the matrix input and output
+functions, while the <code>matrix</code> module handle the internal
+matrix data structure.
+
+The simplest way to read a matrix is to use the
+<code>mtxmkt:mm_readfile/1</code> or <code>mtxmkt:mm_readfile/2</code>
+function. Both function will read a file and return a matrix. The
+matrix data can be accessed and manipuled using the
+<code>matrix</code> module.
+
+Using the <code>matrix</code> module one can get and set individual
+matrix elements, rows, and columns.
+
+To create a new matrix, use the <code>matrix:new/3</code>
+function. Once the empty matrix is obtained, it can be populated with
+data one data item at a time, as well as storing whole rows and
+columns by supplying lists of values. The entire matrix can be
+populated on one step using the <code>matrix:from_list/2</code>
+function and a list of lists.

@@ -14,8 +14,6 @@
 %%% sequence of functions, `mm_openread', `mm_readbanner' and
 %%% `mm_read_matrix_data'.
 %%%
-%%% The matrix write functions are yet to be implemented.
-%%%
 %%% @end
 %%% Created : 5 Jul 2018 by Fred Youhanaie <fyrlang@anydata.co.uk>
 %%%-------------------------------------------------------------------
