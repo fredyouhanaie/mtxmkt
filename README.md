@@ -1,6 +1,6 @@
 # mtxmkt
 
-[![Build Status](https://travis-ci.com/fredyouhanaie/mtxmkt.svg?branch=master)](https://travis-ci.com/fredyouhanaie/mtxmkt)
+[![Erlang CI](https://github.com/fredyouhanaie/mtxmkt/actions/workflows/erlang.yml/badge.svg)](https://github.com/fredyouhanaie/mtxmkt/actions/workflows/erlang.yml)
 
 [Matrix Market](https://math.nist.gov/MatrixMarket/) is a service from
 NIST that provides a repository of test matrices for various
