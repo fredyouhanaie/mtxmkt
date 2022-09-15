@@ -76,32 +76,32 @@ size(M) ->
 -spec check_bounds(integer(), integer(), matrix()) -> ok | outofbounds.
 check_bounds(Row, Col, M) ->
     case check_bounds_row(Row, M) of
-	ok ->
-	    check_bounds_col(Col, M);
-	_ ->
-	    outofbounds
+        ok ->
+            check_bounds_col(Col, M);
+        _ ->
+            outofbounds
     end.
 
 -spec check_bounds_row(integer(), matrix()) -> ok | outofbounds.
 check_bounds_row(Row, M) ->
     Nrows = maps:get(nrows, M),
     if
-	Row < 1 orelse Row > Nrows ->
-	    outofbounds;
-	true ->
-	    ok
+        Row < 1 orelse Row > Nrows ->
+            outofbounds;
+        true ->
+            ok
     end.
     
 -spec check_bounds_col(integer(), matrix()) -> ok | outofbounds.
 check_bounds_col(Col, M) ->
     Ncols = maps:get(ncols, M),
     if
-	Col < 1 orelse Col > Ncols ->
-	    outofbounds;
-	true ->
-	    ok
+        Col < 1 orelse Col > Ncols ->
+            outofbounds;
+        true ->
+            ok
     end.
-    
+
 %%--------------------------------------------------------------------
 %% @doc The value at the given row and column is returned.
 %%
@@ -115,10 +115,10 @@ check_bounds_col(Col, M) ->
 -spec get(integer(), integer(), matrix()) -> term() | outofbounds.
 get(Row, Col, M) ->
     case check_bounds(Row, Col, M) of
-	ok ->
-	    array:get(Col-1, array:get(Row-1, maps:get(data, M)));
-	Error ->
-	    Error
+        ok ->
+            array:get(Col-1, array:get(Row-1, maps:get(data, M)));
+        Error ->
+            Error
     end.
 
 %%--------------------------------------------------------------------
@@ -134,12 +134,12 @@ get(Row, Col, M) ->
 -spec set(integer(), integer(), term(), matrix()) -> matrix() | outofbounds.
 set(Row, Col, Value, M) ->
     case check_bounds(Row, Col, M) of
-	ok ->
-	    RowData = array:set(Col-1, Value, array:get(Row-1, maps:get(data, M))),
-	    MatData = array:set(Row-1, RowData, maps:get(data, M)),
-	    maps:update(data, MatData, M);
-	Error ->
-	    Error
+        ok ->
+            RowData = array:set(Col-1, Value, array:get(Row-1, maps:get(data, M))),
+            MatData = array:set(Row-1, RowData, maps:get(data, M)),
+            maps:update(data, MatData, M);
+        Error ->
+            Error
     end.
 
 %%--------------------------------------------------------------------
@@ -155,10 +155,10 @@ set(Row, Col, Value, M) ->
 -spec get_row_list(integer(), matrix()) -> list() | outofbounds.
 get_row_list(Row, M) ->
     case check_bounds_row(Row, M) of
-	ok ->
-	    array:to_list( array:get(Row-1, maps:get(data, M)) );
-	Error ->
-	    Error
+        ok ->
+            array:to_list( array:get(Row-1, maps:get(data, M)) );
+        Error ->
+            Error
     end.
 
 %%--------------------------------------------------------------------
@@ -175,13 +175,13 @@ get_row_list(Row, M) ->
 -spec set_row_list(integer(), list(), matrix()) -> matrix() | outofbounds.
 set_row_list(Row, List, M) ->
     case check_bounds_row(Row, M) of
-	ok ->
-	    Ncols = maps:get(ncols, M),
-	    Row_array = array:from_list(lists:sublist(List, Ncols), maps:get(default, M)),
-	    Data = array:set(Row-1, Row_array, maps:get(data, M)),
-	    maps:update(data, Data, M);
-	Error ->
-	    Error
+        ok ->
+            Ncols = maps:get(ncols, M),
+            Row_array = array:from_list(lists:sublist(List, Ncols), maps:get(default, M)),
+            Data = array:set(Row-1, Row_array, maps:get(data, M)),
+            maps:update(data, Data, M);
+        Error ->
+            Error
     end.
 
 %%--------------------------------------------------------------------
@@ -197,16 +197,16 @@ set_row_list(Row, List, M) ->
 -spec get_col_list(integer(), matrix()) -> list() | outofbounds.
 get_col_list(Col, M) ->
     case check_bounds_col(Col, M) of
-	ok ->
-	    Col_array = array:map(
-			  fun (_Rnum, Row) ->
-				  array:get(Col-1, Row)
-			  end,
-			  maps:get(data, M)
-			 ),
-	    array:to_list(Col_array);
-	Error ->
-	    Error
+        ok ->
+            Col_array = array:map(
+                          fun (_Rnum, Row) ->
+                                  array:get(Col-1, Row)
+                          end,
+                          maps:get(data, M)
+                         ),
+            array:to_list(Col_array);
+        Error ->
+            Error
     end.
 
 %%--------------------------------------------------------------------
@@ -222,15 +222,15 @@ get_col_list(Col, M) ->
 -spec set_col_list(integer(), list(), matrix()) -> matrix() | outofbounds.
 set_col_list(Col, List, M) ->
     case check_bounds_col(Col, M) of
-	ok ->
-	    Data = array:map(
-		     fun (Rnum, Row) ->
-			     array:set(Col-1, lists:nth(Rnum+1, List), Row)
-		     end,
-		     maps:get(data, M)),
-	    maps:update(data, Data, M);
-	Error ->
-	    Error
+        ok ->
+            Data = array:map(
+                     fun (Rnum, Row) ->
+                             array:set(Col-1, lists:nth(Rnum+1, List), Row)
+                     end,
+                     maps:get(data, M)),
+            maps:update(data, Data, M);
+        Error ->
+            Error
     end.
 
 %%--------------------------------------------------------------------
@@ -241,8 +241,8 @@ set_col_list(Col, List, M) ->
 -spec to_list(matrix()) -> [list()].
 to_list(M) ->
     lists:map(fun (Row) -> array:to_list(Row) end,
-	      array:to_list(maps:get(data, M))
-	     ).
+              array:to_list(maps:get(data, M))
+             ).
 
 %%--------------------------------------------------------------------
 %% @doc Return a matrix with its content replaced with the list of
@@ -269,15 +269,15 @@ from_list(List, M) ->
     Default = maps:get(default, M),
     DefaultRow = array:new( [Ncols, {default, Default}] ),
     RowList = lists:map(
-		fun (Row) ->
-			L = lists:sublist(Row, Ncols),		% remove extra cols in row
-			A = array:from_list(L, Default),	% create the array of cols
-			array:fix(array:resize(Ncols, A))	% ensure row is a fixed array
-		end,
-		lists:sublist(List, Nrows)	% remove extra rows
-	       ),
-    RowsArray = array:from_list(RowList, DefaultRow),	% create array of rows
-    Data = array:fix(array:resize(Nrows, RowsArray)),	% ensure it's a fixed array
+                fun (Row) ->
+                        L = lists:sublist(Row, Ncols),    % remove extra cols in row
+                        A = array:from_list(L, Default),  % create the array of cols
+                        array:fix(array:resize(Ncols, A)) % ensure row is a fixed array
+                end,
+                lists:sublist(List, Nrows) % remove extra rows
+               ),
+    RowsArray = array:from_list(RowList, DefaultRow), % create array of rows
+    Data = array:fix(array:resize(Nrows, RowsArray)), % ensure it's a fixed array
     maps:update(data, Data, M).
 
 %%--------------------------------------------------------------------
@@ -289,13 +289,13 @@ from_list(List, M) ->
 map_matrix(Fun, M) ->
     Mdata1 = maps:get(data, M),
     Mdata2 = array:map(
-	       fun (_Rnum, Row) ->
-		       array:map(
-			 fun (_Cnum, X) -> Fun(X) end,
-			 Row)
-	       end,
-	       Mdata1
-	      ),
+               fun (_Rnum, Row) ->
+                       array:map(
+                         fun (_Cnum, X) -> Fun(X) end,
+                         Row)
+               end,
+               Mdata1
+              ),
     maps:update(data, Mdata2, M).
 
 %%--------------------------------------------------------------------
@@ -311,8 +311,8 @@ map_matrix(Fun, M) ->
 foldl_rows(Fun, Acc0, M) ->
     Mdata = maps:get(data, M),
     lists:map(fun (Row) -> fold_one_row(Fun, Acc0, Row) end,
-	      array:to_list(Mdata)
-	     ).
+              array:to_list(Mdata)
+             ).
 
 %%--------------------------------------------------------------------
 %% @doc Fold a single row (array) from left to right.
@@ -322,10 +322,10 @@ foldl_rows(Fun, Acc0, M) ->
 -spec fold_one_row(function(), term(), array:array()) -> term().
 fold_one_row(Fun, Acc0, Row) ->
     array:foldl(fun (_, AccIn, X) ->
-			Fun(X, AccIn)
-		end,
-		Acc0,
-		Row).
+                        Fun(X, AccIn)
+                end,
+                Acc0,
+                Row).
 
 %%--------------------------------------------------------------------
 %% @doc Count the number of element with default value.
@@ -336,9 +336,9 @@ fold_one_row(Fun, Acc0, Row) ->
 default_count(M) ->
     Default = default(M),
     Count_default = fun (Acc, X) ->
-			    if
-				X == Default -> Acc+1;
-				true -> Acc
-			    end
-		    end,
+                            if
+                                X == Default -> Acc+1;
+                                true -> Acc
+                            end
+                    end,
     lists:sum(foldl_rows(Count_default, 0, M)).

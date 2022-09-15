@@ -88,10 +88,10 @@ mm_openread(Filename, compressed) ->
 -spec mm_openread2(string(), list()) -> iodev()| mtxerror().
 mm_openread2(Filename, Opts) ->
     case file:open(Filename, [read|Opts]) of
-	{ok, IOdev} ->
-	    IOdev;
-	{error, Reason} ->
-	    {error, Reason, "Could not open the file for read"}
+        {ok, IOdev} ->
+            IOdev;
+        {error, Reason} ->
+            {error, Reason, "Could not open the file for read"}
     end.
 
 %%--------------------------------------------------------------------
@@ -123,10 +123,10 @@ mm_openwrite(Filename, compressed) ->
 -spec mm_openwrite2(string(), list()) -> iodev() | mtxerror().
 mm_openwrite2(Filename, Opts) ->
     case file:open(Filename, [write|Opts]) of
-	{ok, IOdev} ->
-	    IOdev;
-	{error, Reason} ->
-	    {error, Reason, "Could not open the file for write"}
+        {ok, IOdev} ->
+            IOdev;
+        {error, Reason} ->
+            {error, Reason, "Could not open the file for write"}
     end.
 
 %%--------------------------------------------------------------------
@@ -143,12 +143,12 @@ mm_openwrite2(Filename, Opts) ->
 -spec mm_read_banner(iodev()) -> mtxcode() | mtxerror().
 mm_read_banner(IOdev) ->
     case file:read_line(IOdev) of
-	{ok, Banner} ->
-	    process_banner(Banner);
-	eof ->
-	    {error, eof, "Premature end of file"};
-	{error, Reason} ->
-	    {error, Reason, "Could not read from file"}
+        {ok, Banner} ->
+            process_banner(Banner);
+        eof ->
+            {error, eof, "Premature end of file"};
+        {error, Reason} ->
+            {error, Reason, "Could not read from file"}
     end.
 
 %%--------------------------------------------------------------------
@@ -162,15 +162,15 @@ mm_read_banner(IOdev) ->
 -spec mm_read_mtx_crd_size(iodev()) -> {integer(), integer(), integer()} | mtxerror().
 mm_read_mtx_crd_size(IOdev) ->
     case read_mtx_size(IOdev, "~d ~d ~d") of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	{Nrows, Ncols, Nelems} ->
-	    if
-		Nrows*Ncols < Nelems ->
-		    {error, mm_invalid_size, "Matrix element count is greater than its size."};
-		true ->
-		    {Nrows, Ncols, Nelems}
-	    end
+        Error = {error, _Reason, _Msg} ->
+            Error;
+        {Nrows, Ncols, Nelems} ->
+            if
+                Nrows*Ncols < Nelems ->
+                    {error, mm_invalid_size, "Matrix element count is greater than its size."};
+                true ->
+                    {Nrows, Ncols, Nelems}
+            end
     end.
 
 %%--------------------------------------------------------------------
@@ -228,22 +228,22 @@ mm_readfile(Filename, compressed) ->
 -spec mm_readfile2(string(), list()) -> {mtxcode(), matrix:matrix()} | mtxerror().
 mm_readfile2(Filename, Opts) ->
     case  mm_openread2(Filename, Opts) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	IOdev ->
-	    Result = case mm_read_banner(IOdev) of
-			 Error = {error, _Reason, _Msg} ->
-			     Error;
-			 Mtx_code ->
-			     case mm_read_matrix_data(IOdev, Mtx_code) of
-				 Error = {error, _Reason, _Msg} ->
-				     Error;
-				 M ->
-				     {Mtx_code, M}
-			     end
-		     end,
-	    file:close(IOdev),
-	    Result
+        Error = {error, _Reason, _Msg} ->
+            Error;
+        IOdev ->
+            Result = case mm_read_banner(IOdev) of
+                         Error = {error, _Reason, _Msg} ->
+                             Error;
+                         Mtx_code ->
+                             case mm_read_matrix_data(IOdev, Mtx_code) of
+                                 Error = {error, _Reason, _Msg} ->
+                                     Error;
+                                 M ->
+                                     {Mtx_code, M}
+                             end
+                     end,
+            file:close(IOdev),
+            Result
     end.
 
 %%--------------------------------------------------------------------
@@ -282,22 +282,22 @@ mm_writefile(Filename, compressed, Mtxcode, M) ->
 -spec mm_writefile2(string(), list(), mtxcode(), matrix:matrix()) -> ok | mtxerror().
 mm_writefile2(Filename, Opts, Mtxcode, M) ->
     case banner_is_valid(Mtxcode) of
-	true ->
-	    case mm_openwrite2(Filename, Opts) of
-		Error = {error, _Reason, _Msg} ->
-		    Error;
-		IOdev ->
-		    Result = case mm_write_banner(IOdev, Mtxcode, M) of
-				 Error = {error, _Reason, _Msg} ->
-				     Error;
-				 ok ->
-				     mm_write_matrix_data(IOdev, Mtxcode, M)
-			     end,
-		    file:close(IOdev),
-		    Result
-	    end;
-	false ->
-	    {error, mm_invalid_banner, "Invalid matrix banner"}
+        true ->
+            case mm_openwrite2(Filename, Opts) of
+                Error = {error, _Reason, _Msg} ->
+                    Error;
+                IOdev ->
+                    Result = case mm_write_banner(IOdev, Mtxcode, M) of
+                                 Error = {error, _Reason, _Msg} ->
+                                     Error;
+                                 ok ->
+                                     mm_write_matrix_data(IOdev, Mtxcode, M)
+                             end,
+                    file:close(IOdev),
+                    Result
+            end;
+        false ->
+            {error, mm_invalid_banner, "Invalid matrix banner"}
     end.
 
 %%--------------------------------------------------------------------
@@ -309,22 +309,22 @@ mm_writefile2(Filename, Opts, Mtxcode, M) ->
 mm_write_banner(IOdev, Mtxcode, M) ->
     {Fmt, _Type, _Symm} = Mtxcode,
     case banner_is_valid(Mtxcode) of
-	true ->
-	    io:format(IOdev, "~s matrix ~s ~s ~s~n",
-		      [?MatrixMarketBanner |
-		       lists:map(fun (X) -> atom_to_list(X) end, tuple_to_list(Mtxcode))
-		      ]
-		     ),
-	    {Nrows, Ncols} = matrix:size(M),
-	    case Fmt of
-		coordinate ->
-		    Nelems = Nrows*Ncols-matrix:default_count(M),
-		    io:format(IOdev, "~p ~p ~p~n", [Nrows, Ncols, Nelems]);
-		array ->
-		    io:format(IOdev, "~p ~p~n", [Nrows, Ncols])
-	    end;
-	false ->
-	    {error, mm_invalid_banner, "Invalid matrix banner supplied"}
+        true ->
+            io:format(IOdev, "~s matrix ~s ~s ~s~n",
+                      [?MatrixMarketBanner |
+                       lists:map(fun (X) -> atom_to_list(X) end, tuple_to_list(Mtxcode))
+                      ]
+                     ),
+            {Nrows, Ncols} = matrix:size(M),
+            case Fmt of
+                coordinate ->
+                    Nelems = Nrows*Ncols-matrix:default_count(M),
+                    io:format(IOdev, "~p ~p ~p~n", [Nrows, Ncols, Nelems]);
+                array ->
+                    io:format(IOdev, "~p ~p~n", [Nrows, Ncols])
+            end;
+        false ->
+            {error, mm_invalid_banner, "Invalid matrix banner supplied"}
     end.
 
 %%--------------------------------------------------------------------
@@ -365,11 +365,11 @@ write_data_col_array(_IOdev, _M, _Symm, _Col_num, 0, _Fmt) ->
 
 write_data_col_array(IOdev, M, Symm, Col_num, Ncols, Fmt) ->
     Col_list = case Symm of
-		   general ->
-		       matrix:get_col_list(Col_num, M);
-		   _ ->
-		       lists:nthtail(Col_num-1, matrix:get_col_list(Col_num, M))
-	       end,
+                   general ->
+                       matrix:get_col_list(Col_num, M);
+                   _ ->
+                       lists:nthtail(Col_num-1, matrix:get_col_list(Col_num, M))
+               end,
     write_data_items_array(IOdev, Col_list, Fmt),
     write_data_col_array(IOdev, M, Symm, Col_num+1, Ncols-1, Fmt).
 
@@ -391,8 +391,8 @@ write_data_row_crd(IOdev, M, general, Row_num, Nrows, Fmt) ->
     Row_list0 = matrix:get_row_list(Row_num, M),
     % Row_list1 is the entire row with each element with coordinates
     Row_list1 = [ [Row_num, Col_num, lists:nth(Col_num, Row_list0)]
-		  || Col_num <- lists:seq(1, length(Row_list0))
-		],
+                  || Col_num <- lists:seq(1, length(Row_list0))
+                ],
     Row_list2 = [ [R, C, X] || [R, C, X] <- Row_list1, X /= Default ],
     write_data_items_crd(IOdev, Row_list2, Fmt),
     write_data_row_crd(IOdev, M, general, Row_num+1, Nrows-1, Fmt).
@@ -410,11 +410,11 @@ write_data_items_array(_IOdev, [], _Fmt) ->
     ok;
 write_data_items_array(IOdev, [Item|Item_list], Fmt) ->
     Items = case Item of
-		{Real, Imag} ->
-		    [Real, Imag];
-		_ ->
-		    [Item]
-	    end,
+                {Real, Imag} ->
+                    [Real, Imag];
+                _ ->
+                    [Item]
+            end,
     io:format(IOdev, Fmt, Items),
     write_data_items_array(IOdev, Item_list, Fmt).
 
@@ -431,13 +431,13 @@ write_data_items_crd(_IOdev, [], _Fmt) ->
     ok;
 write_data_items_crd(IOdev, [Item|Item_list], Fmt) ->
     Items = lists:map(fun (X) ->
-			      case X of
-				  {Real, Imag} ->
-				      [Real, Imag];
-				  _ ->
-				      X
-			      end
-		      end, Item),
+                              case X of
+                                  {Real, Imag} ->
+                                      [Real, Imag];
+                                  _ ->
+                                      X
+                              end
+                      end, Item),
     io:format(IOdev, Fmt, lists:flatten(Items)),
     write_data_items_crd(IOdev, Item_list, Fmt).
 
@@ -450,10 +450,10 @@ write_data_items_crd(IOdev, [Item|Item_list], Fmt) ->
 -spec mm_read_matrix_data(iodev(), mtxcode()) -> matrix:matrix() | mtxerror().
 mm_read_matrix_data(IOdev, {Mtx_fmt, Data_type, Symm_type}) ->
     case read_matrix_size(IOdev, Mtx_fmt) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	Size ->
-	    process_matrix(IOdev, {Mtx_fmt, Data_type, Symm_type}, Size)
+        Error = {error, _Reason, _Msg} ->
+            Error;
+        Size ->
+            process_matrix(IOdev, {Mtx_fmt, Data_type, Symm_type}, Size)
     end.
 
 %%====================================================================
@@ -470,16 +470,16 @@ mm_read_matrix_data(IOdev, {Mtx_fmt, Data_type, Symm_type}) ->
 process_banner(Banner) ->
     Rest = string:prefix(Banner, ?MatrixMarketBanner),
     case Rest of
-	nomatch ->
-	    {error, mm_no_header, "Not a valid Matrix Market file"};
-	_ ->
-	    Fields = str2atoms(string:trim(Rest)),
-	    case length(Fields) of
-		4 ->
-		    process_banner_rest(Fields);
-		_ ->
-		    {error, mm_invalid_header, "Invalid banner line"}
-	    end
+        nomatch ->
+            {error, mm_no_header, "Not a valid Matrix Market file"};
+        _ ->
+            Fields = str2atoms(string:trim(Rest)),
+            case length(Fields) of
+                4 ->
+                    process_banner_rest(Fields);
+                _ ->
+                    {error, mm_invalid_header, "Invalid banner line"}
+            end
     end.
 
 %%--------------------------------------------------------------------
@@ -490,15 +490,15 @@ process_banner(Banner) ->
 -spec process_banner_rest(list()) -> mtxcode() | mtxerror().
 process_banner_rest([Obj, Fmt, Type, Symm]) ->
     case Obj of
-	matrix ->
-	    case banner_is_valid({Fmt, Type, Symm}) of
-		true ->
-		    {Fmt, Type, Symm};
-		false ->
-		    {error, mm_invalid_banner, "Invalid matrix file banner"}
-	    end;
-	_ ->
-	    {error, mm_unsupported_type, "Unsupported object type, must be matrix"}
+        matrix ->
+            case banner_is_valid({Fmt, Type, Symm}) of
+                true ->
+                    {Fmt, Type, Symm};
+                false ->
+                    {error, mm_invalid_banner, "Invalid matrix file banner"}
+            end;
+        _ ->
+            {error, mm_unsupported_type, "Unsupported object type, must be matrix"}
     end.
 
 %%--------------------------------------------------------------------
@@ -511,7 +511,7 @@ str2atoms (Line) ->
     StrList = string:lexemes(Line, ?Blanks),
     lists:map(
       fun (S) ->
-	      erlang:list_to_atom(string:lowercase(S))
+              erlang:list_to_atom(string:lowercase(S))
       end,
       StrList).
 
@@ -525,19 +525,19 @@ str2atoms (Line) ->
 -spec read_next_line(iodev()) -> string() | mtxerror().
 read_next_line(IOdev) ->
     case file:read_line(IOdev) of
-	{ok, Line} ->
-	    case string:is_empty(string:trim(Line)) of
-		true ->
-		    read_next_line(IOdev);
-		_ ->
-		    string:chomp(Line)
-	    end;
-	eof ->
-	    {error, eof, "Error reading from file"};
-	{error, Reason} when is_atom(Reason) ->
-	    {error, Reason, "Error reading from file"};
-	{error, {no_translation, unicode, latin1}} ->
-	    {error, mm_encoding, "Error reading from file"}
+        {ok, Line} ->
+            case string:is_empty(string:trim(Line)) of
+                true ->
+                    read_next_line(IOdev);
+                _ ->
+                    string:chomp(Line)
+            end;
+        eof ->
+            {error, eof, "Error reading from file"};
+        {error, Reason} when is_atom(Reason) ->
+            {error, Reason, "Error reading from file"};
+        {error, {no_translation, unicode, latin1}} ->
+            {error, mm_encoding, "Error reading from file"}
     end.
 
 %%--------------------------------------------------------------------
@@ -550,15 +550,15 @@ read_next_line(IOdev) ->
 -spec skip_comments(iodev()) -> string() | mtxerror().
 skip_comments(IOdev) ->
     case read_next_line(IOdev) of
-	{error, Reason, Msg} ->
-	    {error, Reason, Msg};
-	Line ->
-	    case erlang:hd(Line) of
-		$% ->
-		    skip_comments(IOdev);
-		_ ->
-		    string:trim(Line)
-	    end
+        {error, Reason, Msg} ->
+            {error, Reason, Msg};
+        Line ->
+            case erlang:hd(Line) of
+                $% ->
+                    skip_comments(IOdev);
+                _ ->
+                    string:trim(Line)
+            end
     end.
 
 %%--------------------------------------------------------------------
@@ -571,20 +571,20 @@ skip_comments(IOdev) ->
 -spec read_mtx_size(iodev(), string()) -> {integer(), integer()} | {integer(), integer(), integer()} | mtxerror().
 read_mtx_size(IOdev, Line_fmt) ->
     case skip_comments(IOdev) of
-	Line when is_list(Line) ->
-	    case io_lib:fread(Line_fmt, Line) of
-		{ok, [Nrows, Ncols], []}
-		  when Nrows>0 andalso Ncols>0 ->
-		    {Nrows, Ncols};
-		{ok, [Nrows, Ncols, Nelems], []}
-		  when Nrows>0 andalso Ncols>0 andalso Nelems>0 ->
-		    {Nrows, Ncols, Nelems};
-		_ ->
-		    {error, mm_invalid_size, "Expected positive int/int or int/int/int"}
-	    end;
-	Error ->
-	    Error
-	end.
+        Line when is_list(Line) ->
+            case io_lib:fread(Line_fmt, Line) of
+                {ok, [Nrows, Ncols], []}
+                  when Nrows>0 andalso Ncols>0 ->
+                    {Nrows, Ncols};
+                {ok, [Nrows, Ncols, Nelems], []}
+                  when Nrows>0 andalso Ncols>0 andalso Nelems>0 ->
+                    {Nrows, Ncols, Nelems};
+                _ ->
+                    {error, mm_invalid_size, "Expected positive int/int or int/int/int"}
+            end;
+        Error ->
+            Error
+    end.
 
 %%--------------------------------------------------------------------
 %% @doc Read the `coordinate' data from the open file.
@@ -610,28 +610,28 @@ read_data_crd(_IOdev, _Fmt, 0, M, _Symm) ->
     M;
 read_data_crd(IOdev, Fmt, Nelems, M, Symm) ->
     case read_data_entry(IOdev, Fmt) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	[Row, Col|Entry] ->
-	    Value = case Entry of
-			[] ->		% pattern
-			    1;
-			[Scalar] ->	% integer or real
-			    Scalar;
-			[Real, Imag] ->	% complex number
-			    {Real, Imag}
-		    end,
-	    case matrix:set(Row, Col, Value, M) of
-		outofbounds ->
-		    {error, mm_invalid_coord, "Invalid matrix coordinates"};
-		M2 ->
-		    case set_mat_symmetry(Row, Col, Value, M2, Symm) of
-			Error = {error, _Reason, _Msg} ->
-			    Error;
-			M3 ->
-			    read_data_crd(IOdev, Fmt, Nelems-1, M3, Symm)
-		    end
-	    end
+        Error = {error, _Reason, _Msg} ->
+            Error;
+        [Row, Col|Entry] ->
+            Value = case Entry of
+                        [] ->            % pattern
+                            1;
+                        [Scalar] ->      % integer or real
+                            Scalar;
+                        [Real, Imag] ->  % complex number
+                            {Real, Imag}
+                    end,
+            case matrix:set(Row, Col, Value, M) of
+                outofbounds ->
+                    {error, mm_invalid_coord, "Invalid matrix coordinates"};
+                M2 ->
+                    case set_mat_symmetry(Row, Col, Value, M2, Symm) of
+                        Error = {error, _Reason, _Msg} ->
+                            Error;
+                        M3 ->
+                            read_data_crd(IOdev, Fmt, Nelems-1, M3, Symm)
+                    end
+            end
     end.
 
 %%--------------------------------------------------------------------
@@ -687,15 +687,15 @@ conjugate({Real, Imag}) ->
 -spec read_data_entry(iodev(), string()) -> list() | mtxerror().
 read_data_entry(IOdev, Fmt) ->
     case read_next_line(IOdev) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	Line when is_list(Line) ->
-	    case io_lib:fread(Fmt, string:trim(Line)) of
-		{ok, Data, []} ->
-		    Data;
-		_ ->
-		    {error, mm_invalid_entry, "Invalid data entry."}
-	    end
+        Error = {error, _Reason, _Msg} ->
+            Error;
+        Line when is_list(Line) ->
+            case io_lib:fread(Fmt, string:trim(Line)) of
+                {ok, Data, []} ->
+                    Data;
+                _ ->
+                    {error, mm_invalid_entry, "Invalid data entry."}
+            end
     end.
 
 %%--------------------------------------------------------------------
@@ -706,17 +706,17 @@ read_data_entry(IOdev, Fmt) ->
 %% @end
 %%--------------------------------------------------------------------
 -spec read_data_col(iodev(), string(), integer(), [integer()] | [float()] | complex())
-		   -> [integer()] | [float() | complex()] | mtxerror().
+                   -> [integer()] | [float() | complex()] | mtxerror().
 read_data_col(_IOdev, _Fmt, 0, Col_list) ->
     lists:reverse(Col_list);
 read_data_col(IOdev, Fmt, Nelems, Col_list) ->
     case read_data_entry(IOdev, Fmt) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	[Value] ->
-	    read_data_col(IOdev, Fmt, Nelems-1, [Value|Col_list]);
-	[Value1, Value2] ->	% complex numbers
-	    read_data_col(IOdev, Fmt, Nelems-1, [{Value1, Value2}|Col_list])
+        Error = {error, _Reason, _Msg} ->
+            Error;
+        [Value] ->
+            read_data_col(IOdev, Fmt, Nelems-1, [Value|Col_list]);
+        [Value1, Value2] ->  % complex numbers
+            read_data_col(IOdev, Fmt, Nelems-1, [{Value1, Value2}|Col_list])
     end.
 
 %%--------------------------------------------------------------------
@@ -749,25 +749,25 @@ read_data_array(_IOdev, _Fmt, _Symm, _Nrows, 0, _Col_num, M) ->
 
 read_data_array(IOdev, Fmt, general, Nrows, Ncols, Col_num, M) ->
     case read_data_col(IOdev, Fmt, Nrows, []) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	Col_list ->
-	    M2 = matrix:set_col_list(Col_num, Col_list, M),
-	    read_data_array(IOdev, Fmt, general, Nrows, Ncols-1, Col_num+1, M2)
+        Error = {error, _Reason, _Msg} ->
+            Error;
+        Col_list ->
+            M2 = matrix:set_col_list(Col_num, Col_list, M),
+            read_data_array(IOdev, Fmt, general, Nrows, Ncols-1, Col_num+1, M2)
     end;
 
 read_data_array(IOdev, Fmt, Symm, Nrows, Ncols, Col_num, M) ->
     case read_data_col(IOdev, Fmt, Nrows, []) of
-	Error = {error, _Reason, _Msg} ->
-	    Error;
-	Col_list ->
-	    Col_prefix = lists:sublist(matrix:get_col_list(Col_num, M), 1, Col_num-1),
-	    Col_whole  = Col_prefix ++ Col_list,
-	    M2 = matrix:set_col_list(Col_num, Col_whole, M),
-	    Row_prefix = lists:sublist(matrix:get_row_list(Col_num, M2), 1, Col_num),
-	    Row_whole = Row_prefix ++ lists:map(fun (V) -> symm_value(V, Symm) end, tl(Col_list)),
-	    M3 = matrix:set_row_list(Col_num, Row_whole, M2),
-	    read_data_array(IOdev, Fmt, Symm, Nrows-1, Ncols-1, Col_num+1, M3)
+        Error = {error, _Reason, _Msg} ->
+            Error;
+        Col_list ->
+            Col_prefix = lists:sublist(matrix:get_col_list(Col_num, M), 1, Col_num-1),
+            Col_whole  = Col_prefix ++ Col_list,
+            M2 = matrix:set_col_list(Col_num, Col_whole, M),
+            Row_prefix = lists:sublist(matrix:get_row_list(Col_num, M2), 1, Col_num),
+            Row_whole = Row_prefix ++ lists:map(fun (V) -> symm_value(V, Symm) end, tl(Col_list)),
+            M3 = matrix:set_row_list(Col_num, Row_whole, M2),
+            read_data_array(IOdev, Fmt, Symm, Nrows-1, Ncols-1, Col_num+1, M3)
     end.
 
 %%--------------------------------------------------------------------
@@ -775,10 +775,10 @@ read_data_array(IOdev, Fmt, Symm, Nrows, Ncols, Col_num, M) ->
 %%
 %% @end
 %% --------------------------------------------------------------------
-symm_value(Value, symmetric)			->    Value;
-symm_value(Value, hermitian)			->    conjugate(Value);
-symm_value({Real, Imag}, 'skew-symmetric')	->    {-Real, -Imag};
-symm_value(Value, 'skew-symmetric')		->    -Value.
+symm_value(Value, symmetric)               ->    Value;
+symm_value(Value, hermitian)               ->    conjugate(Value);
+symm_value({Real, Imag}, 'skew-symmetric') ->    {-Real, -Imag};
+symm_value(Value, 'skew-symmetric')        ->    -Value.
 
 
 %%--------------------------------------------------------------------
@@ -829,12 +829,12 @@ datatype2fmt_r(coordinate, Type) ->
 
 datatype2fmt_r(array, Type) ->
     case Type of
-	integer ->
-	    {"~d", 0};
-	real ->
-	    {"~f", 0.0};
-	complex ->
-	    {"~f ~f", {0.0, 0.0}}
+        integer ->
+            {"~d", 0};
+        real ->
+            {"~f", 0.0};
+        complex ->
+            {"~f ~f", {0.0, 0.0}}
     end.
 
 %%--------------------------------------------------------------------
@@ -853,12 +853,12 @@ datatype2fmt_w(coordinate, Type) ->
 
 datatype2fmt_w(array, Type) ->
     case Type of
-	integer ->
-	    "~b~n";
-	real ->
-	    "~f~n";
-	complex ->
-	    "~f ~f~n"
+        integer ->
+            "~b~n";
+        real ->
+            "~f~n";
+        complex ->
+            "~f ~f~n"
     end.
 
 
@@ -912,10 +912,10 @@ banner_is_valid(Mtxcode = {Frmt, Type, Symm}) ->
 %% @end
 %%--------------------------------------------------------------------
 -spec banner_is_valid2(mtxcode()) -> boolean().
-banner_is_valid2({array     , complex, hermitian})		-> true;
-banner_is_valid2({coordinate, complex, hermitian})		-> true;
-banner_is_valid2({_Format   , _Type  , hermitian})		-> false;
-banner_is_valid2({coordinate, pattern, general})		-> true;
-banner_is_valid2({coordinate, pattern, symmetric})		-> true;
-banner_is_valid2({_Format   , pattern, _Symm})			-> false;
-banner_is_valid2({_Format   , _Type,   _Symm})			-> true.
+banner_is_valid2({array     , complex, hermitian}) -> true;
+banner_is_valid2({coordinate, complex, hermitian}) -> true;
+banner_is_valid2({_Format   , _Type  , hermitian}) -> false;
+banner_is_valid2({coordinate, pattern, general})   -> true;
+banner_is_valid2({coordinate, pattern, symmetric}) -> true;
+banner_is_valid2({_Format   , pattern, _Symm})     -> false;
+banner_is_valid2({_Format   , _Type,   _Symm})     -> true.
