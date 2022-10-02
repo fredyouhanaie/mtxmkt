@@ -17,6 +17,8 @@ largest matrix is a square matrix of order 90449!
 It is hoped that this will prove useful for anyone wishing to test
 numerical analysis and/or linear algebra programs written in Erlang.
 
+<https://github.com/fredyouhanaie/mtxmkt>.
+
 ---
 
 Follow these links for the module docs:
