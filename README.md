@@ -1,6 +1,6 @@
 # mtxmkt
 
-[![Erlang CI](https://github.com/fredyouhanaie/mtxmkt/actions/workflows/erlang.yml/badge.svg)](https://github.com/fredyouhanaie/mtxmkt/actions/workflows/erlang.yml) [![Hex.pm](https://img.shields.io/hexpm/v/mtxmkt.svg)](https://hex.pm/packages/mtxmkt)
+[![Erlang CI](https://github.com/fredyouhanaie/mtxmkt/actions/workflows/erlang.yml/badge.svg)](https://github.com/fredyouhanaie/mtxmkt/actions/workflows/erlang.yml) [![Hex.pm](https://img.shields.io/hexpm/v/mtxmkt.svg)](https://hex.pm/packages/mtxmkt) [![Hex Docs](https://img.shields.io/badge/hex-docs-blue.svg)](https://hexdocs.pm/mtxmkt)
 
 [Matrix Market](https://math.nist.gov/MatrixMarket/) is a service from
 NIST that provides a repository of test matrices for various
