@@ -1,5 +1,5 @@
 ---
-name: Erlang CI
+name: Erlang CI 2
 
 on:  # yamllint disable-line rule:truthy
   push:
