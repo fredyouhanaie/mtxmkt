@@ -797,7 +797,7 @@ read_matrix_size(IOdev, array) ->
 %%
 %% @end
 %%--------------------------------------------------------------------
--spec process_matrix(iodev(), mtxcode(), {integer(), integer(), integer()}) ->  matrix:mtrix()| mtxerror().
+-spec process_matrix(iodev(), mtxcode(), {integer(), integer(), integer()}) ->  matrix:matrix()| mtxerror().
 process_matrix(IOdev, {coordinate, Data_type, Symm_type}, {Nrows, Ncols, Nelems}) ->
     {Fmt, Mtx_default} = datatype2fmt_r(coordinate, Data_type),
     M = matrix:new(Nrows, Ncols, Mtx_default),
