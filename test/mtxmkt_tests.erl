@@ -255,9 +255,9 @@ valid_crd_real_gen_test() ->
     {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_real_gen),
     ?assertMatch({{coordinate, real, general},
 		  [
-		   [1.1,0.0,2.2],
-		   [0.0,3.3,0.0],
-		   [4.4,0.0,5.5]
+		   [ 1.1,+0.0, 2.2],
+		   [+0.0, 3.3,+0.0],
+		   [ 4.4,+0.0, 5.5]
 		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid coordinate complex general
@@ -265,9 +265,9 @@ valid_crd_complex_gen_test() ->
     {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_complex_gen),
     ?assertMatch({{coordinate, complex, general},
 		  [
-		   [{1.1,1.2},{0.0,0.0},{2.2,2.3}],
-		   [{0.0,0.0},{3.3,3.4},{0.0,0.0}],
-		   [{4.4,4.5},{0.0,0.0},{5.5,5.6}]
+		   [{ 1.1, 1.2},{+0.0,+0.0},{ 2.2, 2.3}],
+		   [{+0.0,+0.0},{ 3.3, 3.4},{+0.0,+0.0}],
+		   [{ 4.4, 4.5},{+0.0,+0.0},{ 5.5, 5.6}]
 		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid array integer general
@@ -360,10 +360,10 @@ valid_crd_real_symm_test() ->
     {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_real_symm),
     ?assertMatch({{coordinate, real, symmetric},
 		  [
-		   [1.1,0.0,4.4,2.2],
-		   [0.0,3.3,0.0,0.0],
-		   [4.4,0.0,5.5,0.0],
-		   [2.2,0.0,0.0,6.6]
+		   [ 1.1,+0.0, 4.4, 2.2],
+		   [+0.0, 3.3,+0.0,+0.0],
+		   [ 4.4,+0.0, 5.5,+0.0],
+		   [ 2.2,+0.0,+0.0, 6.6]
 		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid coordinate complex symmetric
@@ -371,10 +371,10 @@ valid_crd_complex_symm_test() ->
     {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_complex_symm),
     ?assertMatch({{coordinate, complex, symmetric},
 		  [
-		   [{1.1,1.2},{0.0,0.0},{4.4,4.5},{2.2,2.3}],
-		   [{0.0,0.0},{3.3,3.4},{0.0,0.0},{0.0,0.0}],
-		   [{4.4,4.5},{0.0,0.0},{5.5,5.6},{0.0,0.0}],
-		   [{2.2,2.3},{0.0,0.0},{0.0,0.0},{6.6,6.7}]
+		   [{ 1.1, 1.2},{+0.0,+0.0},{ 4.4, 4.5},{ 2.2, 2.3}],
+		   [{+0.0,+0.0},{ 3.3, 3.4},{+0.0,+0.0},{+0.0,+0.0}],
+		   [{ 4.4, 4.5},{+0.0,+0.0},{ 5.5, 5.6},{+0.0,+0.0}],
+		   [{ 2.2, 2.3},{+0.0,+0.0},{+0.0,+0.0},{ 6.6, 6.7}]
 		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid coordinate complex hermitian
@@ -382,10 +382,10 @@ valid_crd_complex_herm_test() ->
     {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_complex_herm),
     ?assertMatch({{coordinate, complex, hermitian},
 		  [
-		   [{1.1,1.2},{0.0,0.0},{4.4,-4.5},{2.2, -2.3}],
-		   [{0.0,0.0},{3.3,3.4},{0.0, 0.0},{0.0,  0.0}],
-		   [{4.4,4.5},{0.0,0.0},{5.5, 5.6},{0.0,  0.0}],
-		   [{2.2,2.3},{0.0,0.0},{0.0, 0.0},{6.6,  6.7}]
+		   [{ 1.1, 1.2},{+0.0,+0.0},{ 4.4,-4.5},{ 2.2,-2.3}],
+		   [{+0.0,+0.0},{ 3.3, 3.4},{+0.0,+0.0},{+0.0,+0.0}],
+		   [{ 4.4, 4.5},{+0.0,+0.0},{ 5.5, 5.6},{+0.0,+0.0}],
+		   [{ 2.2, 2.3},{+0.0,+0.0},{+0.0,+0.0},{ 6.6, 6.7}]
 		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid coordinate integer skew-symmetric
@@ -404,10 +404,10 @@ valid_crd_real_skewsymm_test() ->
     {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_real_skewsymm),
     ?assertMatch({{coordinate, real, 'skew-symmetric'},
 		  [
-		   [1.1, 0.0,-4.4,-2.2],
-		   [0.0, 3.3, 0.0, 0.0],
-		   [4.4, 0.0, 5.5, 0.0],
-		   [2.2, 0.0, 0.0, 6.6]
+		   [ 1.1,+0.0,-4.4,-2.2],
+		   [+0.0, 3.3,+0.0,+0.0],
+		   [ 4.4,+0.0, 5.5,+0.0],
+		   [ 2.2,+0.0,+0.0, 6.6]
 		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % valid coordinate complex skew-symmetric
@@ -415,10 +415,10 @@ valid_crd_complex_skewsymm_test() ->
     {Mtx_code, M} = mtxmkt:mm_readfile(?File_valid_crd_complex_skewsymm),
     ?assertMatch({{coordinate, complex, 'skew-symmetric'},
 		  [
-		   [{ 1.1, 1.2},{ 0.0, 0.0},{-4.4,-4.5},{-2.2, -2.3}],
-		   [{ 0.0, 0.0},{ 3.3, 3.4},{ 0.0, 0.0},{ 0.0,  0.0}],
-		   [{ 4.4, 4.5},{ 0.0, 0.0},{ 5.5, 5.6},{ 0.0,  0.0}],
-		   [{ 2.2, 2.3},{ 0.0, 0.0},{ 0.0, 0.0},{ 6.6,  6.7}]
+		   [{ 1.1, 1.2},{+0.0,+0.0},{-4.4,-4.5},{-2.2, -2.3}],
+		   [{+0.0,+0.0},{ 3.3, 3.4},{+0.0,+0.0},{+0.0, +0.0}],
+		   [{ 4.4, 4.5},{+0.0,+0.0},{ 5.5, 5.6},{+0.0, +0.0}],
+		   [{ 2.2, 2.3},{+0.0,+0.0},{+0.0,+0.0},{ 6.6,  6.7}]
 		  ]}, {Mtx_code, matrix:to_list(M)}).
 
 % bad file data test
@@ -551,13 +551,13 @@ dt2fmt_w_test() ->
 
 % format for reading data
 dt2fmt_r_test() ->
-    ?assertMatch({"~f ~f", {0.0, 0.0}},		mtxmkt:datatype2fmt_r(array, complex)),
+    ?assertMatch({"~f ~f", {+0.0, +0.0}},	mtxmkt:datatype2fmt_r(array, complex)),
     ?assertMatch({"~d", 0},			mtxmkt:datatype2fmt_r(array, integer)),
-    ?assertMatch({"~f", 0.0},			mtxmkt:datatype2fmt_r(array, real)),
-    ?assertMatch({"~d ~d ~f ~f", {0.0, 0.0}},	mtxmkt:datatype2fmt_r(coordinate, complex)),
+    ?assertMatch({"~f", +0.0},			mtxmkt:datatype2fmt_r(array, real)),
+    ?assertMatch({"~d ~d ~f ~f", {+0.0, +0.0}},	mtxmkt:datatype2fmt_r(coordinate, complex)),
     ?assertMatch({"~d ~d ~d", 0},		mtxmkt:datatype2fmt_r(coordinate, integer)),
     ?assertMatch({"~d ~d", 0},			mtxmkt:datatype2fmt_r(coordinate, pattern)),
-    ?assertMatch({"~d ~d ~f", 0.0},		mtxmkt:datatype2fmt_r(coordinate, real)).
+    ?assertMatch({"~d ~d ~f", +0.0},		mtxmkt:datatype2fmt_r(coordinate, real)).
 
 % open matrix file for write
 openwrite_file_1_test() ->
@@ -686,7 +686,7 @@ write_array_5_test() ->
     Testfile = "testfile.mtx",
     file:delete(Testfile),
     Mtxcode1 = {array, complex, general},
-    M1 = matrix:set_row_list(2, [{1.1, 2.2}, {3.3, 4.4}, {5.5, 6.6}], matrix:new(2, 3, {0.0, 0.0})),
+    M1 = matrix:set_row_list(2, [{1.1, 2.2}, {3.3, 4.4}, {5.5, 6.6}], matrix:new(2, 3, {+0.0, +0.0})),
     ?assertMatch('ok', mtxmkt:mm_writefile(Testfile, Mtxcode1, M1)),
     {Mtxcode2, M2} = mtxmkt:mm_readfile(Testfile),
     ?assertMatch(Mtxcode1, Mtxcode2),
@@ -703,7 +703,7 @@ write_array_6_test() ->
 			   [2.2, 4.4, 5.5],
 			   [3.3, 5.5, 6.6]
 			  ],
-			 matrix:new(3, 3, 0.0)),
+			 matrix:new(3, 3, +0.0)),
     ?assertMatch('ok', mtxmkt:mm_writefile(Testfile, Mtxcode1, M1)),
     {Mtxcode2, M2} = mtxmkt:mm_readfile(Testfile),
     ?assertMatch(Mtxcode1, Mtxcode2),
@@ -727,7 +727,7 @@ write_coord_2_test() ->
     Testfile = "testfile.mtx",
     file:delete(Testfile),
     Mtxcode1 = {coordinate, complex, general},
-    M1 = matrix:set_row_list(2, [{4.1, 4.2}, {5.1, 5.2}, {6.1, 6.2}], matrix:new(2, 3, {0.0, 0.0})),
+    M1 = matrix:set_row_list(2, [{4.1, 4.2}, {5.1, 5.2}, {6.1, 6.2}], matrix:new(2, 3, {+0.0,+0.0})),
     ?assertMatch('ok', mtxmkt:mm_writefile(Testfile, Mtxcode1, M1)),
     {Mtxcode2, M2} = mtxmkt:mm_readfile(Testfile),
     ?assertMatch(Mtxcode1, Mtxcode2),
@@ -743,7 +743,7 @@ write_data_bad_banner_test() ->
     ?assert(is_pid(IOdev)),
 
     Mtxcode1 = {coordinate, complex, general},
-    M = matrix:new(2, 3, {0.0, 0.0}),
+    M = matrix:new(2, 3, {+0.0, +0.0}),
     ?assertMatch(ok, mtxmkt:mm_write_banner(IOdev, Mtxcode1, M)),
 
     Mtxcode2 = {coordray, complex, general},
